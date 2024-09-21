@@ -64,16 +64,27 @@ int GetOpts(int argc, char** argv, kOpts *option, int *number){
     return 0;
 }
 
-void HandlerOptH(int number) {
+int getLenghtOfInt(int n){
+    int len = 0;
+    do{
+        len++;
+        n /= 10;
+    } while (n != 0);
+    
+    return len;
+}
+
+int HandlerOptH(int number) {
     for (int i = 1; i <= 100; ++i) {
         if (!(i % number)) {
             printf("%d\n", i);
         }
     }
-    return;
+
+    return 0;
 }
 
-void HandlerOptP(int number) {
+int HandlerOptP(int number) {
     int flag = 1;
 
     for (int i = 2; i <= sqrt(number); ++i) {
@@ -87,23 +98,115 @@ void HandlerOptP(int number) {
     } else {
         printf("%d is not simple\n", number);
     }
+
+    return 0;
 }
 
-void HandleOptS(int number) {
+int HandleOptS(int number) {
+    int num = number;
+    int i = 1, j, temp; 
+    char hex_num[100]; 
     
+    while (num != 0) { 
+        temp = num % 16; 
+         
+        if (temp < 10) 
+            temp = temp + 48; 
+        else
+            temp = temp + 55; 
+        hex_num[i++] = temp; 
+        num = num / 16; 
+    } 
+    printf("Hexadecimal value is: "); 
+    for (j = i - 1; j > 0; j--) 
+        printf("%c ", hex_num[j]);
+    printf("\n");
+
+    return 0;
+}
+
+int HandleOptE(int number) {
+    if (number > 10){
+        return 301;
+    }
+
+    const int symbols_in_row = 20;
+    int max_power = number;
+    for (int power = 1; power <= max_power; power++){
+        for (int base = 1; base <= 5; base++){
+            int value = pow(base, power);
+
+            int value_symbs = getLenghtOfInt(value);
+            int base_symbs = (base == 10) ? 2 : 1;
+            int power_symbs = (power == 10) ? 2 : 1;
+            int blank_symbs = symbols_in_row - value_symbs - base_symbs - power_symbs - 4;
+
+            printf("%d^%d = %d", base, power, value);
+            while(blank_symbs != 0){
+                printf(" ");
+                blank_symbs--;
+            }
+            printf("| ");
+        }
+        printf("\n");
+    }
+    for (int j = symbols_in_row * 5 + 5; j != 0; j--) printf("=");
+    printf("\n");
+    for (int power = 1; power <= max_power; power++){
+        for (int base = 6; base <= 10; base++){
+            int value = pow(base, power);
+
+            int value_symbs = getLenghtOfInt(value);
+            int base_symbs = (base == 10) ? 2 : 1;
+            int power_symbs = (power == 10) ? 2 : 1;
+            int blank_symbs = symbols_in_row - value_symbs - base_symbs - power_symbs - 4;
+
+            printf("%d^%d = %d", base, power, value);
+            while(blank_symbs != 0){
+                printf(" ");
+                blank_symbs--;
+            }
+            printf("| ");
+        }
+        printf("\n");
+    }
+
+    return 0;
+}
+
+int HandleOptA(int number) {
+    int sum = 0;
+    for (int i = 1; i <= number; i++){
+        sum += i;
+    }
+    printf("%d \n", sum);
+    return 0;
+}
+
+int HandleOptF(int number){
+    long long factotial = 1;
+    for (int i = 1; i <= number; i++){
+        factotial *= i;
+    }
+    printf("%lld \n", factotial);
+    return 0;
 }
 
 int main(int argc, char** argv){
     kOpts option = 0;
     int number = 0;
-    void (*handlers[6])(int) = {
+    int (*handlers[6])(int) = {
         HandlerOptH,
-        HandlerOptP
+        HandlerOptP,
+        HandleOptS,
+        HandleOptE,
+        HandleOptA,
+        HandleOptF
     };
     
-    const int err_status = GetOpts(argc, argv, &option, &number);
-    if (err_status){
-        switch (err_status)
+    const int parse_err_status = GetOpts(argc, argv, &option, &number);
+    if (parse_err_status){
+        switch (parse_err_status)
         {
         case 101:
             printf("%s \n", "Not enough number of argumnets. You have pass to two arguements.");
@@ -120,12 +223,19 @@ int main(int argc, char** argv){
         case 203:
             printf("%s \n", "Invalid value of second arguement. Unknown flag.");
             break;
-        default:
-            break;
         }
     }
 
-    handlers[option](number);
+    const int run_err_status = handlers[option](number);
+    if (run_err_status){
+        switch (run_err_status)
+        {
+        case 301:
+            printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
+            break;
+        }
+    }
+    
 
     return 0;
 }
