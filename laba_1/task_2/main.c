@@ -39,14 +39,13 @@ int getOpts(int argc, char** argv, double* epsilon){
 }
 
 double e_lim( double eps){
-    double e = 2.0;
+    double e = 2.25;
     double prev_e = 2.0;
     double n = 2;
-    while (1){
-        e = pow(1 + (1 / n), n);
-        if (fabs(e - prev_e) < eps) break;
+    while (fabs(e - prev_e) > eps){
         prev_e = e;
         n++;
+        e = pow(1 + (1/n), n);
     }
     return e;
 }
@@ -56,7 +55,7 @@ double e_seq(double eps){
 }
 
 double e_equ(double eps){
-    
+    // уравнения надо решать методом дихотомии
 }
 
 int main(int argc, char** argv){
