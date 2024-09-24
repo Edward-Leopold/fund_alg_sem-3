@@ -38,6 +38,12 @@ int getOpts(int argc, char** argv, double* epsilon){
     return 0;
 }
 
+double factorial(double n){
+    double temp = 1;
+    for(int i = 1; i <= n; i++) temp *= i;
+    return temp;
+}
+
 double e_lim( double eps){
     double e = 2.25;
     double prev_e = 2.0;
@@ -51,11 +57,32 @@ double e_lim( double eps){
 }
 
 double e_seq(double eps){
-    
+    double prev_e = 1;
+    double e = 2;
+    double n = 1;
+    while(fabs(e - prev_e) > eps){
+        prev_e = e;
+        n++;
+        e = prev_e + (1 / factorial(n));
+    }
+    return e;
 }
 
-double e_equ(double eps){
-    // уравнения надо решать методом дихотомии
+double e_equ(double x){
+    return log(x) - 1;
+}
+
+double dichotomy(double (*f)(double), double left, double right, double eps){
+    double center;
+    while(fabs(f(left) - f(right)) > eps){
+        center = (right + left) / 2.0;
+        if(f(left) * f(center) > 0){
+            left = center;
+        } else{
+            right = center;
+        }
+    }
+    return center;
 }
 
 int main(int argc, char** argv){
@@ -76,8 +103,9 @@ int main(int argc, char** argv){
         }
     }
     // printf("%20.180lf \n", eps);
-    printf("the result of calculation is %20.20lf \n", e_lim(eps));
-
+    printf("the result of e limit calculation is %20.20lf \n", e_lim(eps));
+    printf("the result of e sequence calculation is %20.20lf \n", e_seq(eps));
+    printf("the result of e equation calculation is %20.20lf \n", dichotomy(e_equ, 2.0, 3.0, eps));
 
     return 0;
 }
