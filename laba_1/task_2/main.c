@@ -54,6 +54,10 @@ double pi_lim(double n){
     return (pow(pow(2, n) * factorial(n), 4.0) / (n * pow(factorial(2*n), 2.0)));
 }
 
+double ln2_lim(double n){
+    return n * (pow(2, 1/n) - 1);
+}
+
 double limit(double (*f)(double), double eps){
     double prev_val = f(1);
     double val = f(2);
@@ -74,6 +78,10 @@ double e_seq(double n){
 
 double pi_seq(double n){
     return ((4 * pow(-1, n - 1) / (2*n - 1)));
+}
+
+double ln2_seq(double n){
+    return pow(-1, n - 1) / n;
 }
 
 double sum(double (*f)(double), double start_n, double eps){
@@ -112,6 +120,10 @@ double pi_equ(double x){
     return tan(x);
 }
 
+double ln2_equ(double x){
+    return exp(x) - 2;
+}
+
 double dichotomy(double (*f)(double), double left, double right, double eps){
     double center;
     while(fabs(f(left) - f(right)) > eps){
@@ -142,13 +154,27 @@ int main(int argc, char** argv){
             break;
         }
     }
-    // printf("%20.180lf \n", eps);
-    printf("the result of e limit calculation is %20.20lf \n", limit(e_lim, eps));
-    printf("the result of e sequence calculation is %20.20lf \n", sum(e_seq, 0, eps));
-    printf("the result of e equation calculation is %20.20lf \n", dichotomy(e_equ, 2.0, 3.0, eps));
+    
+    printf("Число e:\n");
+    printf("Предел последовательности: %20.20lf \n", limit(e_lim, eps));
+    printf("Сумма ряда: %20.20lf \n", sum(e_seq, 0, eps));
+    printf("Уравнение: %20.20lf \n", dichotomy(e_equ, 2.0, 3.0, eps));
     printf("===============================\n");
-    printf("the result of pi limit calculation is %20.20lf \n", limit(pi_lim, eps));
-    printf("the result of pi sequence calculation is %20.20lf \n", sum(pi_seq, 1, eps));
-    printf("the result of e equation calculation is %20.20lf \n", dichotomy(pi_equ, 3.0, 4.0, eps));
+
+    printf("Число pi:\n");
+    printf("Предел последовательности: %20.20lf \n", limit(pi_lim, eps));
+    printf("Сумма ряда: %20.20lf \n", sum(pi_seq, 1, eps));
+    printf("Уравнение: %20.20lf \n", dichotomy(pi_equ, 3.0, 4.0, eps));
+    printf("===============================\n");
+
+    printf("Число ln2:\n");
+    printf("Предел последовательности: %20.20lf \n", limit(ln2_lim, eps));
+    printf("Сумма ряда: %20.20lf \n", sum(ln2_seq, 1, eps));
+    printf("Уравнение: %20.20lf \n", dichotomy(ln2_equ, 0.0, 1.0, eps));
+    printf("===============================\n");
+
+    printf("Число sqrt(2):\n");
+    printf("===============================\n");
+
     return 0;
 }
