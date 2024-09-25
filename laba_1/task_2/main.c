@@ -70,6 +70,18 @@ double limit(double (*f)(double), double eps){
     return f(n -= 2);
 }
 
+double lim_sqrt2(double eps){
+    double prev_x;
+    double x = -0.5;
+    double n = 0;
+    while(fabs(x - prev_x) > eps){
+        prev_x = x;
+        n++;
+        x = prev_x - (pow(prev_x, 2) / 2) + 1;
+    }
+    return x;
+}
+
 // sequences
 
 double e_seq(double n){
@@ -82,6 +94,10 @@ double pi_seq(double n){
 
 double ln2_seq(double n){
     return pow(-1, n - 1) / n;
+}
+
+double sqrt2_seq(double k){
+    return pow(2, pow(2, -k));
 }
 
 double sum(double (*f)(double), double start_n, double eps){
@@ -99,8 +115,7 @@ double sum(double (*f)(double), double start_n, double eps){
 
 double product(double (*f)(double), double start_k, double eps){
     double prev_val = f(start_k);
-    // double val = f(start_n++);
-    double val = prev_val * f(start_k++);
+    double val = prev_val * f(++start_k);
     double k = start_k;
     while (fabs(val - prev_val) > eps){
         prev_val = val;
@@ -122,6 +137,10 @@ double pi_equ(double x){
 
 double ln2_equ(double x){
     return exp(x) - 2;
+}
+
+double sqrt2_equ(double x){
+    return pow(x, 2) - 2;
 }
 
 double dichotomy(double (*f)(double), double left, double right, double eps){
@@ -174,6 +193,9 @@ int main(int argc, char** argv){
     printf("===============================\n");
 
     printf("Число sqrt(2):\n");
+    printf("Предел последовательности: %20.20lf \n", lim_sqrt2(eps));
+    printf("Произведение ряда: %20.20lf \n", product(sqrt2_seq, 2, eps));
+    printf("Уравнение: %20.20lf \n", dichotomy(sqrt2_equ, 1.0, 2.0, eps));
     printf("===============================\n");
 
     return 0;
