@@ -44,32 +44,72 @@ double factorial(double n){
     return temp;
 }
 
-double e_lim( double eps){
-    double e = 2.25;
-    double prev_e = 2.0;
-    double n = 2;
-    while (fabs(e - prev_e) > eps){
-        prev_e = e;
-        n++;
-        e = pow(1 + (1/n), n);
-    }
-    return e;
+// limits
+
+double e_lim(double n){
+    return pow(1 + (1/n), n);
 }
 
-double e_seq(double eps){
-    double prev_e = 1;
-    double e = 2;
-    double n = 1;
-    while(fabs(e - prev_e) > eps){
-        prev_e = e;
-        n++;
-        e = prev_e + (1 / factorial(n));
-    }
-    return e;
+double pi_lim(double n){
+    return (pow(pow(2, n) * factorial(n), 4.0) / (n * pow(factorial(2*n), 2.0)));
 }
+
+double limit(double (*f)(double), double eps){
+    double prev_val = f(1);
+    double val = f(2);
+    double n = 2;
+    while (fabs(val - prev_val) > eps){
+        prev_val = val;
+        n++;
+        val = f(n);
+    }
+    return f(n -= 2);
+}
+
+// sequences
+
+double e_seq(double n){
+    return (1 / factorial(n));
+}
+
+double pi_seq(double n){
+    return ((4 * pow(-1, n - 1) / (2*n - 1)));
+}
+
+double sum(double (*f)(double), double start_n, double eps){
+    double prev_val = f(start_n);
+    start_n++;
+    double val = prev_val + f(start_n);
+    double n = start_n;
+    while (fabs(val - prev_val) > eps){
+        prev_val = val;
+        n++;
+        val = prev_val + f(n);
+    }
+    return val;
+}
+
+double product(double (*f)(double), double start_k, double eps){
+    double prev_val = f(start_k);
+    // double val = f(start_n++);
+    double val = prev_val * f(start_k++);
+    double k = start_k;
+    while (fabs(val - prev_val) > eps){
+        prev_val = val;
+        k++;
+        val = prev_val * f(k);
+    }
+    return val;
+}
+
+// equations
 
 double e_equ(double x){
     return log(x) - 1;
+}
+
+double pi_equ(double x){
+    return tan(x);
 }
 
 double dichotomy(double (*f)(double), double left, double right, double eps){
@@ -103,9 +143,12 @@ int main(int argc, char** argv){
         }
     }
     // printf("%20.180lf \n", eps);
-    printf("the result of e limit calculation is %20.20lf \n", e_lim(eps));
-    printf("the result of e sequence calculation is %20.20lf \n", e_seq(eps));
+    printf("the result of e limit calculation is %20.20lf \n", limit(e_lim, eps));
+    printf("the result of e sequence calculation is %20.20lf \n", sum(e_seq, 0, eps));
     printf("the result of e equation calculation is %20.20lf \n", dichotomy(e_equ, 2.0, 3.0, eps));
-
+    printf("===============================\n");
+    printf("the result of pi limit calculation is %20.20lf \n", limit(pi_lim, eps));
+    printf("the result of pi sequence calculation is %20.20lf \n", sum(pi_seq, 1, eps));
+    printf("the result of e equation calculation is %20.20lf \n", dichotomy(pi_equ, 3.0, 4.0, eps));
     return 0;
 }
