@@ -7,11 +7,10 @@ typedef enum kOpts{
     OPT_T
 } kOpts;
 
-// добавить обработку отрицательных чисел
 int parse_int(char* proceeding_number, int* result_number){
     int temp = 0;
     int is_negative = 0;
-    if (proceeding_number[0] == '-'){
+    if (proceeding_number[0] == '-'){ // parsing negative int number
         is_negative = 1;
     }
     for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
@@ -33,7 +32,11 @@ int parse_double(char* proceeding_number, double* result_number){
     int flag = 0;
     int digits_after_dot = 0;
     int int_num = 0;
-    for (int i = 0; proceeding_number[i]; i++){
+    int is_negative = 0;
+    if (proceeding_number[0] == '-'){ // parsing negative double number
+        is_negative = 1;
+    }
+    for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
         if (ch >= '0' || ch <= '9' || ch == '.'){
             if (ch == '.' && flag) return 201;
@@ -51,7 +54,8 @@ int parse_double(char* proceeding_number, double* result_number){
         }
     }
 
-    *result_number = int_num / pow(10, digits_after_dot);
+    double temp = int_num / pow(10, digits_after_dot);
+    *result_number = is_negative ? -temp : temp;
 
     return 0;
 }
