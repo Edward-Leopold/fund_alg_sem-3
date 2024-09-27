@@ -7,10 +7,14 @@ typedef enum kOpts{
     OPT_T
 } kOpts;
 
-
+// добавить обработку отрицательных чисел
 int parse_int(char* proceeding_number, int* result_number){
     int temp = 0;
-    for (int i = 0; proceeding_number[i]; i++){
+    int is_negative = 0;
+    if (proceeding_number[0] == '-'){
+        is_negative = 1;
+    }
+    for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
         if (ch >= '0' && ch <= '9'){
             temp *= 10;
@@ -20,7 +24,7 @@ int parse_int(char* proceeding_number, int* result_number){
         }
     }
 
-    *result_number = temp;
+    *result_number = is_negative ? -temp : temp;
 
     return 0;
 }
@@ -139,18 +143,89 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
             num_arguements[i - 2] = d;
         }
         break;
-    default:
-        break;
     }
 
     return 0;
 }
 
+void quad_equation(double a, double b, double c, double* roots_arr){
+    if(a == 0 && b == 0 && c == 0) return;
+
+    double d = pow(b, 2) - 4*a*c;
+    
+    if (d < 0) return;
+    if (d == 0) {
+        roots_arr[0] = (-b) / (2*a);
+        return;
+    } else{
+        roots_arr[0] = (-b + sqrt(d)) / (2*a);
+        roots_arr[1] = (-b - sqrt(d)) / (2*a);
+    }
+    return; 
+}
+
+void print_roots(double* roots){
+    if(roots[0] && roots[1]){
+        printf("корни x1 = %f, x2 = %f;\n", roots[0], roots[1]);
+    } else if(roots[0]){
+        printf("корень x = %f;\n", roots[0]);
+    } else{
+        printf("нет корней \n");
+    }
+}
+
+void print_solution(double a, double b, double c){
+    double roots[2];
+    quad_equation(a, b, c, roots);
+    printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
+    print_roots(roots);
+    return;
+}
+
+void handlerOptQ(double vals[]){
+    // double a, b, c = vals[0], vals[1], vals[2];
+
+    double a = vals[0];
+    double b = vals[1];
+    double c = vals[2];
+
+    if (a == b && b == c){
+        print_solution(a, b, c);
+        return;
+    }
+    if ((a == b || a == c || b == c)){
+        if (a == b){
+            print_solution(a, a, c);
+            print_solution(a, c, a);
+            print_solution(c, a, a);
+        }
+        if (a == c){
+            print_solution(a, b, a);
+            print_solution(b, a, a);
+            print_solution(a, a, b);
+        }
+        if (b == c){
+            print_solution(a, b, b);
+            print_solution(b, a, b);
+            print_solution(b, b, a);
+        }
+        return;
+    } else{ // if a != b != c
+        print_solution(a, b, c);
+        print_solution(a, c, b);
+        print_solution(b, a, c);
+        print_solution(b, c, a);
+        print_solution(c, a, b);
+        print_solution(c, b, a);
+    }
+    return;
+}
+
 int main(int argc, char** argv){
     kOpts option = 0;
     double values[4];
-    int (*handlers[3])(double* []) = {
-        
+    void (*handlers[3])(double*) = {
+        handlerOptQ
     };
     
     int err_status = getOpts(argc, argv, &option, values);
@@ -177,6 +252,8 @@ int main(int argc, char** argv){
             break;
         }
     }
+
+
 
     printf("flag index: %d, arguements: \n", option);
     for (int i = 0; values[i]; i++){
