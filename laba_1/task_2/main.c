@@ -29,7 +29,7 @@ int getOpts(int argc, char** argv, double* epsilon){
             int_num *= 10;
             int_num += ch - '0';
         } else {
-            return 201;
+            return 201; // invalid aruemnet value (must be double)
         }
     }
 
@@ -163,7 +163,7 @@ int main(int argc, char** argv){
         switch (err_status)
         {
         case 101:
-            printf("%s \n", "Not enough number of argumnets. You have pass to two arguements.");
+            printf("%s \n", "Not enough number of argumnets. You have to pass to two arguements.");
             break;
         case 102:
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
