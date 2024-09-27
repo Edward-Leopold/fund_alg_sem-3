@@ -153,8 +153,35 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
 }
 
 void quad_equation(double a, double b, double c, double* roots_arr){
-    if(a == 0 && b == 0 && c == 0) return;
-
+    if (a == 0 || b == 0 || c == 0){
+        if(a == 0 && b == 0 && c == 0) return;
+        if(a == 0){
+            if (b != 0 && c != 0) { // bx = -c
+                roots_arr[0] = (-c) / b;
+                return;
+            }
+            if (b != 0 && c == 0){ // bx = 0
+                roots_arr[0] = 0;
+                return;
+            }
+           return; // c = 0
+        }
+        if (b == 0){
+            if (a != 0 && c != 0){ // a*x^2 = -c
+                double right_side = (-c) / a;
+                if (right_side < 0) return;
+                roots_arr[0] = sqrt(right_side);
+                roots_arr[1] = -sqrt(right_side);
+                return;
+            }
+            if (a != 0 && c == 0){ // a*x^2 = 0
+                roots_arr[0] = 0;
+                return;
+            }
+            return; // c = 0
+        }
+    }
+    
     double d = pow(b, 2) - 4*a*c;
     
     if (d < 0) return;
@@ -183,15 +210,17 @@ void print_solution(double a, double b, double c){
     quad_equation(a, b, c, roots);
     printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
     print_roots(roots);
+    printf("\n");
     return;
 }
 
-void handlerOptQ(double vals[]){
+void handlerOptQ(double* vals){
     // double a, b, c = vals[0], vals[1], vals[2];
-
-    double a = vals[0];
-    double b = vals[1];
-    double c = vals[2];
+    double eps = vals[0];
+    double a = vals[1];
+    double b = vals[2];
+    double c = vals[3];
+    printf("%f %f %f \n", a, b, c);
 
     if (a == b && b == c){
         print_solution(a, b, c);
@@ -264,5 +293,6 @@ int main(int argc, char** argv){
         printf("%f ", values[i]);
     }
     printf("\n");
+    handlers[option](values);
     return 0;
 }
