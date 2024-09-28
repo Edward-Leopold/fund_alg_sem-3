@@ -152,104 +152,115 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     return 0;
 }
 
-void quad_equation(double a, double b, double c, double* roots_arr){
-    if (a == 0 || b == 0 || c == 0){
-        if(a == 0 && b == 0 && c == 0) return;
-        if(a == 0){
-            if (b != 0 && c != 0) { // bx = -c
-                roots_arr[0] = (-c) / b;
-                return;
-            }
-            if (b != 0 && c == 0){ // bx = 0
-                roots_arr[0] = 0;
-                return;
-            }
-           return; // c = 0
-        }
-        if (b == 0){
-            if (a != 0 && c != 0){ // a*x^2 = -c
-                double right_side = (-c) / a;
-                if (right_side < 0) return;
-                roots_arr[0] = sqrt(right_side);
-                roots_arr[1] = -sqrt(right_side);
-                return;
-            }
-            if (a != 0 && c == 0){ // a*x^2 = 0
-                roots_arr[0] = 0;
-                return;
-            }
-            return; // c = 0
-        }
-    }
-    
-    double d = pow(b, 2) - 4*a*c;
-    
-    if (d < 0) return;
-    if (d == 0) {
-        roots_arr[0] = (-b) / (2*a);
-        return;
-    } else{
-        roots_arr[0] = (-b + sqrt(d)) / (2*a);
-        roots_arr[1] = (-b - sqrt(d)) / (2*a);
-    }
-    return; 
-}
 
 void print_roots(double* roots){
     if(roots[0] && roots[1]){
         printf("корни x1 = %f, x2 = %f;\n", roots[0], roots[1]);
-    } else if(roots[0]){
+    } else {
         printf("корень x = %f;\n", roots[0]);
-    } else{
-        printf("нет корней \n");
     }
 }
 
-void print_solution(double a, double b, double c){
+void quad_equation(double a, double b, double c, double eps){
     double roots[2];
-    quad_equation(a, b, c, roots);
-    printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
+    if (a == 0 || b == 0 || c == 0){
+        if(a == 0 && b == 0 && c == 0) {
+            printf("нет корней\n");
+            return;
+        }
+        if(a == 0){
+            if (b != 0 && c != 0) { // bx = -c
+                roots[0] = (-c) / b;
+            }
+            if (b != 0 && c == 0){ // bx = 0
+                roots[0] = 0;
+            } else{ // c = 0
+                printf("нет корней\n");
+                return;
+            }
+        }
+        if (b == 0){
+            if (a != 0 && c != 0){ // a*x^2 = -c
+                double right_side = (-c) / a;
+                if (right_side > 0){
+                    roots[0] = sqrt(right_side);
+                    roots[1] = -sqrt(right_side);
+                } else{ // sqrt from negative number
+                    printf("нет корней\n");
+                    return;
+                }
+            }
+            if (a != 0 && c == 0){ // a*x^2 = 0
+                roots[0] = 0;
+            } else{ // c = 0
+                printf("нет корней\n");
+                return;
+            }
+        }
+    } else{
+        double d = pow(b, 2) - 4*a*c;
+        printf("d = %f\n", d);
+        if (d > 0 && d <= eps){
+            d = 0;
+        }
+        if (d == 0) {
+            roots[0] = (-b) / (2*a);
+        } else if(d > 0){
+            roots[0] = (-b + sqrt(d)) / (2*a);
+            roots[1] = (-b - sqrt(d)) / (2*a);
+        } else{
+            printf("нет корней\n");
+            return;
+        }
+    }
+    
     print_roots(roots);
+
+    return;
+}
+
+void print_solution(double a, double b, double c, double eps){
+    printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
+    quad_equation(a, b, c, eps);
     printf("\n");
+
     return;
 }
 
 void handlerOptQ(double* vals){
-    // double a, b, c = vals[0], vals[1], vals[2];
     double eps = vals[0];
     double a = vals[1];
     double b = vals[2];
     double c = vals[3];
-    printf("%f %f %f \n", a, b, c);
 
     if (a == b && b == c){
-        print_solution(a, b, c);
+        print_solution(a, b, c, eps);
         return;
     }
     if ((a == b || a == c || b == c)){
         if (a == b){
-            print_solution(a, a, c);
-            print_solution(a, c, a);
-            print_solution(c, a, a);
+            print_solution(a, a, c, eps);
+            print_solution(a, c, a, eps);
+            print_solution(c, a, a, eps);
         }
         if (a == c){
-            print_solution(a, b, a);
-            print_solution(b, a, a);
-            print_solution(a, a, b);
+            print_solution(a, b, a, eps);
+            print_solution(b, a, a, eps);
+            print_solution(a, a, b, eps);
         }
         if (b == c){
-            print_solution(a, b, b);
-            print_solution(b, a, b);
-            print_solution(b, b, a);
+            print_solution(a, b, b, eps);
+            print_solution(b, a, b, eps);
+            print_solution(b, b, a, eps);
         }
         return;
     } else{ // if a != b != c
-        print_solution(a, b, c);
-        print_solution(a, c, b);
-        print_solution(b, a, c);
-        print_solution(b, c, a);
-        print_solution(c, a, b);
-        print_solution(c, b, a);
+        print_solution(a, b, c, eps);
+        print_solution(a, c, b, eps);
+        print_solution(b, a, c, eps);
+        print_solution(b, c, a, eps);
+        print_solution(c, a, b, eps);
+        print_solution(c, b, a, eps);
     }
     return;
 }
@@ -285,7 +296,6 @@ int main(int argc, char** argv){
             break;
         }
     }
-
 
 
     printf("flag index: %d, arguements: \n", option);
