@@ -279,12 +279,53 @@ void handlerOptM(double* vals){
     return;
 }
 
+// -t handler
+void hadlerOptT(double* vals){
+    double eps = vals[0];
+    double a = vals[1];
+    double b = vals[2];
+    double c = vals[3];
+
+    int is_triangle = 0;
+    
+    if (a + b > c || a + c > b || b + c > a) {
+        double hyp, cath1, cath2;
+
+        if (a > b && a > c) {
+            hyp = a;
+            cath1 = b;
+            cath2 = c;
+        } else if(b > a && b > c){
+            hyp = b;
+            cath1 = a;
+            cath2 = c;
+        } else{
+            hyp = c;
+            cath1 = a;
+            cath2 = b;
+        }
+
+        double pif = sqrt(pow(cath1, 2) + pow(cath2, 2));
+        if (fabs(hyp - pif) <= eps) {
+            is_triangle = 1;
+        }
+    }
+    if (a <= 0 || b <= 0 || c <= 0) is_triangle = 0;
+
+    if(is_triangle){
+        printf("Числа %f, %f, %f могут являться сторонами прямоугольного треугольника \n", a, b, c);
+    } else{
+        printf("Числа %f, %f, %f не могут являться сторонами прямоугольного треугольника \n", a, b, c);
+    }
+}
+
 int main(int argc, char** argv){
     kOpts option = 0;
     double values[4];
     void (*handlers[3])(double*) = {
         handlerOptQ,
-        handlerOptM
+        handlerOptM,
+        hadlerOptT
     };
     
     int err_status = getOpts(argc, argv, &option, values);
@@ -310,14 +351,8 @@ int main(int argc, char** argv){
             printf("%s \n", "Ivnalid arguement value (must be integer).");
             break;
         }
+    } else{
+        handlers[option](values);
     }
-
-
-    printf("flag index: %d, arguements: \n", option);
-    for (int i = 0; values[i]; i++){
-        printf("%f ", values[i]);
-    }
-    printf("\n");
-    handlers[option](values);
     return 0;
 }
