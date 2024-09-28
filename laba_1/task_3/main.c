@@ -152,7 +152,7 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     return 0;
 }
 
-
+// -q handler
 void print_roots(double* roots){
     if(roots[0] && roots[1]){
         printf("корни x1 = %f, x2 = %f;\n", roots[0], roots[1]);
@@ -265,11 +265,26 @@ void handlerOptQ(double* vals){
     return;
 }
 
+// -m handler
+void handlerOptM(double* vals){
+    int n = (int)vals[0];
+    int m = (int)vals[1];
+
+    // printf("%d %d\n", n, m);
+    if (n % m == 0){
+        printf("Число %d кратно %d \n", n, m);
+    } else{
+        printf("Число %d не кратно %d \n", n, m);
+    }
+    return;
+}
+
 int main(int argc, char** argv){
     kOpts option = 0;
     double values[4];
     void (*handlers[3])(double*) = {
-        handlerOptQ
+        handlerOptQ,
+        handlerOptM
     };
     
     int err_status = getOpts(argc, argv, &option, values);
