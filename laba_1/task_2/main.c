@@ -163,7 +163,7 @@ int main(int argc, char** argv){
         switch (err_status)
         {
         case 101:
-            printf("%s \n", "Not enough number of argumnets. You have to pass to two arguements.");
+            printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
             break;
         case 102:
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
