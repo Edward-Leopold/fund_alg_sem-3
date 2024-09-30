@@ -56,15 +56,32 @@ double factorial(double n){
     return temp;
 }
 
-double sum(double (*f)(double), double start_n, double eps){
-    double prev_val = f(start_n);
+double a_func(double n, double x){
+    return pow(x, n) / factorial(n);
+}
+
+double b_func(double n, double x){
+    return (pow(-1, n) * pow(x, 2*n) / factorial(2*n));
+}
+
+// насколько я понял ряды двух последних функций расходятся при x => 1
+double c_func(double n, double x){
+    return ((pow(3, 3*n) * pow(factorial(n), 3) * pow(x, 2*n)) / factorial(3*n));
+}
+
+double d_func(double n, double x){
+    return (pow(-1, n) * factorial(factorial(2*n - 1)) * pow(x, 2*n)) / factorial(factorial(2*n));
+}
+
+double sum(double (*f)(double, double), double start_n, double eps, double x){
+    double prev_val = f(start_n, x);
     start_n++;
-    double val = prev_val + f(start_n);
+    double val = prev_val + f(start_n, x);
     double n = start_n;
     while (fabs(val - prev_val) > eps){
         prev_val = val;
         n++;
-        val = prev_val + f(n);
+        val = prev_val + f(n, x);
     }
     return val;
 }
@@ -89,6 +106,14 @@ int main(int argc, char** argv){
     }
     
     printf("eps = %f, x = %f \n", eps, x);
+    printf("\n");
+    printf("a = %f\n", sum(a_func, 0, eps, x));
+
+    printf("b = %f\n", sum(b_func, 0, eps, x));
+
+    printf("c = %f\n", sum(c_func, 0, eps, x));
+
+    printf("d = %f\n", sum(d_func, 1, eps, x));
 
     return 0;
 }
