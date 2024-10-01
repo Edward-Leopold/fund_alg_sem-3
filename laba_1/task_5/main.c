@@ -120,6 +120,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Ivnalid arguement value (must be double).");
             break;
         }
+        return 1;
     }
     
     

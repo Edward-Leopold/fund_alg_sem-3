@@ -69,7 +69,7 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     const char* proceeding_option = argv[1]; // getting the flag string
 
     // checking the flag type
-    if (proceeding_option[0] == '-' || proceeding_option[1] == '/'){
+    if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
         switch (proceeding_option[1])
         {
         case 'q':
@@ -351,6 +351,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Ivnalid arguement value (must be integer).");
             break;
         }
+        return 1;
     } else{
         handlers[option](values);
     }

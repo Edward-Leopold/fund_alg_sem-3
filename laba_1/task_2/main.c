@@ -34,6 +34,10 @@ int getOpts(int argc, char** argv, double* epsilon){
     }
 
     *epsilon = int_num / pow(10, digits_after_dot);
+    
+    if (*epsilon == 0){
+        return 202;
+    }
 
     return 0;
 }
@@ -100,17 +104,30 @@ double sqrt2_seq(double k){
     return pow(2, pow(2, -k));
 }
 
+// double sum(double (*f)(double), double start_n, double eps){
+//     double prev_val = f(start_n);
+//     start_n++;
+//     double val = prev_val + f(start_n);
+//     double n = start_n;
+//     while (fabs(val - prev_val) > eps){
+//         prev_val = val;
+//         n++;
+//         val = prev_val + f(n);
+//     }
+//     return val;
+// }
+
 double sum(double (*f)(double), double start_n, double eps){
     double prev_val = f(start_n);
     start_n++;
-    double val = prev_val + f(start_n);
+    double val = f(start_n);
     double n = start_n;
-    while (fabs(val - prev_val) > eps){
-        prev_val = val;
+    while (fabs(val) > eps){
+        prev_val += val;
         n++;
-        val = prev_val + f(n);
+        val = f(n);
     }
-    return val;
+    return val + prev_val;
 }
 
 double product(double (*f)(double), double start_k, double eps){
@@ -159,6 +176,7 @@ double dichotomy(double (*f)(double), double left, double right, double eps){
 int main(int argc, char** argv){
     double eps = 0;
     int err_status = getOpts(argc, argv, &eps);
+
     if(err_status){ // handling errors from cli input
         switch (err_status)
         {
@@ -171,7 +189,11 @@ int main(int argc, char** argv){
         case 201:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be a valid float number.");
             break;
+        case 202:
+            printf("%s \n", "Invalid value of first arguement. The first arguement must be more than 0.");
+            break;
         }
+        return 1;
     }
     
     printf("Число e:\n");

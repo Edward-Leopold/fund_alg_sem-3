@@ -32,7 +32,7 @@ int GetOpts(int argc, char** argv, kOpts *option, int *number){
         }
     }
 
-    if (proceeding_option[0] == '-' || proceeding_option[1] == '/'){
+    if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
         switch (proceeding_option[1])
         {
         case 'h':
@@ -209,7 +209,7 @@ int main(int argc, char** argv){
         switch (parse_err_status)
         {
         case 101:
-            printf("%s \n", "Not enough number of argumnets. You have pass to two arguements.");
+            printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
             break;
         case 102:
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
@@ -224,6 +224,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Invalid value of second arguement. Unknown flag.");
             break;
         }
+        return 1;
     }
 
     const int run_err_status = handlers[option](number);
@@ -234,6 +235,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
             break;
         }
+        return 1;
     }
     
 
