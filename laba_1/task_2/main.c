@@ -93,7 +93,7 @@ double e_seq(double n){
 }
 
 double pi_seq(double n){
-    return ((4 * pow(-1, n - 1) / (2*n - 1)));
+    return ((int)n % 2 == 0) ? ((4 * (-1) / (2*n - 1))) : ((4 * 1 / (2*n - 1))) ; 
 }
 
 double ln2_seq(double n){
@@ -162,7 +162,7 @@ double sqrt2_equ(double x){
 
 double dichotomy(double (*f)(double), double left, double right, double eps){
     double center;
-    while(fabs(f(left) - f(right)) > eps){
+    while(fabs(right - left) > eps){
         center = (right + left) / 2.0;
         if(f(left) * f(center) > 0){
             left = center;

@@ -19,48 +19,57 @@ int GetOpts(int argc, char** argv, kOpts *option, int *number){
         }
     }
 
-    const char* proceeding_number = argv[1];
-    const char* proceeding_option = argv[2];
-
-    for (int i = 0; proceeding_number[i]; i++){
-        char ch = proceeding_number[i];
-        if (ch >= '0' && ch <= '9'){
-            *number *= 10;
-            *number += ch - '0';
+    for (int i = 1; argv[i]; i++){
+        const char* proceeding_option = argv[i];
+        
+        if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
+            if (proceeding_option[2]){
+                return 203;
+            }
+            switch (proceeding_option[1])
+            {
+            case 'h':
+                *option = OPT_H;
+                break;
+            case 'p':
+                *option = OPT_P;
+                break;
+            case 's':
+                *option = OPT_S;
+                break;
+            case 'e':
+                *option = OPT_E;
+                break;
+            case 'a':
+                *option = OPT_A;
+                break;
+            case 'f':
+                *option = OPT_F;
+                break;
+            default:
+                return 203;
+                break;
+            }
+        } else if(proceeding_option[0] >= '0' && proceeding_option[0] <= '9'){
+            int temp = 0;
+            for (int j = 0; proceeding_option[j]; j++){
+                char ch = proceeding_option[j];
+                if (ch >= '0' && ch <= '9'){
+                    temp *= 10;
+                    temp += ch - '0';
+                } else{
+                    return 201;
+                }
+            }
+            if (temp == 0) {
+                return 301; // the number must be natural
+            }
+            *number = temp;
         } else{
-            return 201;
+            return 202;
         }
     }
-
-    if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
-        switch (proceeding_option[1])
-        {
-        case 'h':
-            *option = OPT_H;
-            break;
-        case 'p':
-            *option = OPT_P;
-            break;
-        case 's':
-            *option = OPT_S;
-            break;
-        case 'e':
-            *option = OPT_E;
-            break;
-        case 'a':
-            *option = OPT_A;
-            break;
-        case 'f':
-            *option = OPT_F;
-            break;
-        default:
-            return 203;
-            break;
-        }
-    } else{
-        return 202;
-    }
-
+    
     return 0;
 }
 
@@ -215,13 +224,13 @@ int main(int argc, char** argv){
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
             break;
         case 201:
-            printf("%s \n", "Invalid value of first arguement. The first arguement must be an integer.");
+            printf("%s \n", "Ошибка при считывании числа.");
             break;
         case 202:
-            printf("%s \n", "Invalid value of second arguement. The second arguement must be a flag starting with '/' or '-' (example of valid second arguemnet '-h').");
+            printf("%s \n", "Ошибка, должно быть два аргумента: флаг и число.");
             break;
         case 203:
-            printf("%s \n", "Invalid value of second arguement. Unknown flag.");
+            printf("%s \n", "Ошибка! неизвестный флаг.");
             break;
         }
         return 1;

@@ -112,7 +112,7 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
             num_arguements[i - 2] = d;
         }
         break;
-    case 1:
+    case 1: // -m flag
         if (argc != 4){
             if (argc < 4){
                 return 101;
@@ -129,7 +129,7 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
             num_arguements[i - 2] = (double)n;
         }
         break;
-    case 2:
+    case 2: // -t flag
         if (argc != 6){
             if (argc < 6){
                 return 101;
