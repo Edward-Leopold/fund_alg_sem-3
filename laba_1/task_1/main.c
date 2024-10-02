@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "../err.h"
 
 typedef enum kOpts{
     OPT_H,
@@ -10,21 +11,27 @@ typedef enum kOpts{
     OPT_F
 } kOpts;
 
-int GetOpts(int argc, char** argv, kOpts *option, int *number){
+errorCodes GetOpts(int argc, char** argv, kOpts *option, int *number){
     if (argc != 3){
         if (argc < 3){
-            return 101;
+            return NOT_ENOUGH_ARGUEMENTS;
         } else{
-            return 102;
+            return TOO_MANY_ARGUEMENTS;
         }
     }
+
+    int is_set_num = 0;
+    int is_set_flag = 0;
 
     for (int i = 1; argv[i]; i++){
         const char* proceeding_option = argv[i];
         
         if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
+            if (!proceeding_option[1]){
+                return INVALID_ARGUEMENT;
+            }
             if (proceeding_option[2]){
-                return 203;
+                return UNKNOWN_FLAG;
             }
             switch (proceeding_option[1])
             {
@@ -47,9 +54,10 @@ int GetOpts(int argc, char** argv, kOpts *option, int *number){
                 *option = OPT_F;
                 break;
             default:
-                return 203;
+                return UNKNOWN_FLAG;
                 break;
             }
+            is_set_flag = 1;
         } else if(proceeding_option[0] >= '0' && proceeding_option[0] <= '9'){
             int temp = 0;
             for (int j = 0; proceeding_option[j]; j++){
@@ -58,19 +66,24 @@ int GetOpts(int argc, char** argv, kOpts *option, int *number){
                     temp *= 10;
                     temp += ch - '0';
                 } else{
-                    return 201;
+                    return INVALID_INT;
                 }
             }
             if (temp == 0) {
-                return 301; // the number must be natural
+                return INVALID_ARGUEMENT; // the number must be natural
             }
             *number = temp;
+            is_set_num = 1;
         } else{
-            return 202;
+            return INVALID_ARGUEMENT;
         }
     }
-    
-    return 0;
+
+    if (!(is_set_num && is_set_flag)){
+        return INVALID_ARGUEMENT; // if (9 9) or (-h -h) were passed
+    }
+
+    return NORMAL;
 }
 
 int getLenghtOfInt(int n){
@@ -83,17 +96,17 @@ int getLenghtOfInt(int n){
     return len;
 }
 
-int HandlerOptH(int number) {
+void HandlerOptH(int number) {
     for (int i = 1; i <= 100; ++i) {
         if (!(i % number)) {
             printf("%d\n", i);
         }
     }
 
-    return 0;
+    return;
 }
 
-int HandlerOptP(int number) {
+void HandlerOptP(int number) {
     int flag = 1;
 
     for (int i = 2; i <= sqrt(number); ++i) {
@@ -108,10 +121,10 @@ int HandlerOptP(int number) {
         printf("%d is not simple\n", number);
     }
 
-    return 0;
+    return;
 }
 
-int HandleOptS(int number) {
+void HandleOptS(int number) {
     int num = number;
     int i = 1, j, temp; 
     char hex_num[100]; 
@@ -131,14 +144,10 @@ int HandleOptS(int number) {
         printf("%c ", hex_num[j]);
     printf("\n");
 
-    return 0;
+    return;
 }
 
-int HandleOptE(int number) {
-    if (number > 10){
-        return 301;
-    }
-
+void HandleOptE(int number) {
     const int symbols_in_row = 20;
     int max_power = number;
     for (int power = 1; power <= max_power; power++){
@@ -180,31 +189,31 @@ int HandleOptE(int number) {
         printf("\n");
     }
 
-    return 0;
+    return;
 }
 
-int HandleOptA(int number) {
+void HandleOptA(int number) {
     int sum = 0;
     for (int i = 1; i <= number; i++){
         sum += i;
     }
     printf("%d \n", sum);
-    return 0;
+    return;
 }
 
-int HandleOptF(int number){
+void HandleOptF(int number){
     long long factotial = 1;
     for (int i = 1; i <= number; i++){
         factotial *= i;
     }
     printf("%lld \n", factotial);
-    return 0;
+    return;
 }
 
 int main(int argc, char** argv){
     kOpts option = 0;
     int number = 0;
-    int (*handlers[6])(int) = {
+    void (*handlers[6])(int) = {
         HandlerOptH,
         HandlerOptP,
         HandleOptS,
@@ -213,40 +222,34 @@ int main(int argc, char** argv){
         HandleOptF
     };
     
-    const int parse_err_status = GetOpts(argc, argv, &option, &number);
-    if (parse_err_status){
+    const errorCodes parse_err_status = GetOpts(argc, argv, &option, &number);
+    if (parse_err_status != NORMAL){
         switch (parse_err_status)
         {
-        case 101:
+        case NOT_ENOUGH_ARGUEMENTS:
             printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
             break;
-        case 102:
+        case TOO_MANY_ARGUEMENTS:
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
             break;
-        case 201:
-            printf("%s \n", "Ошибка при считывании числа.");
+        case INVALID_ARGUEMENT:
+            printf("%s \n", "Invalid arguement have been passed. You have to pass flag and natural number.");
             break;
-        case 202:
-            printf("%s \n", "Ошибка, должно быть два аргумента: флаг и число.");
+        case INVALID_INT:
+            printf("%s \n", "An error occured while reading integer number.");
             break;
-        case 203:
-            printf("%s \n", "Ошибка! неизвестный флаг.");
+        case UNKNOWN_FLAG:
+            printf("%s \n", "Error. Unknown flag.");
             break;
         }
         return 1;
     }
 
-    const int run_err_status = handlers[option](number);
-    if (run_err_status){
-        switch (run_err_status)
-        {
-        case 301:
-            printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
-            break;
-        }
+    if(option == OPT_E && number > 10) {
+        printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
         return 1;
     }
-    
+    handlers[option](number);
 
     return 0;
 }

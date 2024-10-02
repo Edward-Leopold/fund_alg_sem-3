@@ -1,0 +1,10 @@
+
+typedef enum errorCodes{
+    NOT_ENOUGH_ARGUEMENTS,
+    TOO_MANY_ARGUEMENTS,
+    INVALID_ARGUEMENT,
+    UNKNOWN_FLAG,
+    INVALID_INT,
+    INVALID_DOUBLE,
+    NORMAL
+} errorCodes;
