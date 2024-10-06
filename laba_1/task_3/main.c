@@ -39,7 +39,7 @@ int parse_double(char* proceeding_number, double* result_number){
     }
     for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
-        if (ch >= '0' || ch <= '9' || ch == '.'){
+        if ((ch >= '0' && ch <= '9') || ch == '.'){
             if (ch == '.' && flag) return 201;
             if (ch == '.'){
                 flag = 1;

@@ -12,7 +12,7 @@ int parse_double(char* proceeding_number, double* result_number){
     }
     for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
-        if (ch >= '0' || ch <= '9' || ch == '.'){
+        if ((ch >= '0' && ch <= '9') || ch == '.'){
             if (ch == '.' && flag) return 201;
             if (ch == '.'){
                 flag = 1;
@@ -34,44 +34,44 @@ int parse_double(char* proceeding_number, double* result_number){
     return 0;
 }
 
-int getOpts(int argc, char** argv, double* epsilon){
+errorCodes getOpts(int argc, char** argv, double* epsilon){
     if (argc != 2){
         if (argc < 2){
-            return 101; // not enough arguements
+            return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
         } else{
-            return 102; // to much arguements
+            return TOO_MANY_ARGUEMENTS; // to much arguements
         }
     }
 
     char* eps_option = argv[1];
     if (parse_double(eps_option, epsilon)) {
-        return 301;
+        return INVALID_DOUBLE;
     }
-    if (*epsilon == 0){
-        return 302;
+    if (*epsilon <= 0){
+        return INVALID_EPSILON;
     }
 
-    return 0;
+    return NORMAL;
 }
 
 int main(int argc, char** argv){
     double eps = 0;
 
-    int err_status = getOpts(argc, argv, &eps);
-    if(err_status){ // handling errors from cli input
+    errorCodes err_status = getOpts(argc, argv, &eps);
+    if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
-        case 101:
-            printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
+        case NOT_ENOUGH_ARGUEMENTS:
+            printf("%s \n", "Not enough number of argumnets. You have to pass one arguement.");
             break;
-        case 102:
-            printf("%s \n", "Too many argumnets. You have to pass two arguements.");
+        case TOO_MANY_ARGUEMENTS:
+            printf("%s \n", "Too many argumnets. You have to pass one arguement.");
             break;
-        case 301:
+        case INVALID_DOUBLE:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be a valid float number.");
             break;
-        case 302:
-            printf("%s \n", "Invalid value of first arguement. The first arguement must not be 0.");
+        case INVALID_EPSILON:
+            printf("%s \n", "Invalid value of first arguement. The first arguement must be greater than 0.");
             break;
         }
         return 1;
