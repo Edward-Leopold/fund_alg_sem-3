@@ -44,6 +44,7 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
 }
 
 double factorial(double n){
+    if (n == 0) return 1;
     double temp = 1;
     for(int i = 1; i <= n; i++) temp *= i;
     return temp;

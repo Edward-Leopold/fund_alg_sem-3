@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "../err.h"
 
 int parse_double(char* proceeding_number, double* result_number){
     int flag = 0;
