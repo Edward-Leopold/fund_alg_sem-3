@@ -63,7 +63,8 @@ double b_func(double x){
 }
 
 double c_func(double x){
-    return log(1 / (1 - x));
+    // return log(1 / (1 - x));
+    return -log(1 - x);
 }
 
 double d_func(double x){
