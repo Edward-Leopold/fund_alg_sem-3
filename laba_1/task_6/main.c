@@ -70,14 +70,14 @@ double d_func(double x){
     return pow(x, x);
 }
 
-double integral(double (*f)(double), double eps){
+double integral(double (*f)(double), double left, double right, double eps){
     double val = 0;
-    double left = 0;
-    double right = 1;
+    // double left = 0;
+    // double right = 1;
     double interval = right - left;
     double n = interval / eps;
     // printf("%f\n", n);
-    for (int i = 0; i <= n; i++){
+    for (int i = 0; i < n; i++){
         double x = (left + i * eps) + eps / 2;
         val += eps * f(x);
         // printf("%f %f\n", eps, f(x));
@@ -108,10 +108,10 @@ int main(int argc, char** argv){
         return 1;
     }
     
-    printf("a: %f\n", integral(a_func, eps));
-    printf("b: %f\n", integral(b_func, eps));
-    printf("c: %f\n", integral(c_func, eps));
-    printf("d: %f\n", integral(d_func, eps));
+    printf("a: %f\n", integral(a_func, 0, 1, eps));
+    printf("b: %f\n", integral(b_func, 0, 1, eps));
+    printf("c: %f\n", integral(c_func, 0, 1, eps));
+    printf("d: %f\n", integral(d_func, 0, 1, eps));
 
     return 0;
 }
