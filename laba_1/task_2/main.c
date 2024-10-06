@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <math.h>
+#include "../err.h"
 
-int getOpts(int argc, char** argv, double* epsilon){
+errorCodes getOpts(int argc, char** argv, double* epsilon){
     if (argc != 2){
         if (argc < 2){
-            return 101; // not enough arguements
+            return NOT_ENOUGH_ARGUEMENTS;
         } else{
-            return 102; // to much arguements
+            return TOO_MANY_ARGUEMENTS; // to much arguements
         }
     }
 
@@ -29,17 +30,17 @@ int getOpts(int argc, char** argv, double* epsilon){
             int_num *= 10;
             int_num += ch - '0';
         } else {
-            return 201; // invalid aruemnet value (must be double)
+            return INVALID_DOUBLE;
         }
     }
 
     *epsilon = int_num / pow(10, digits_after_dot);
     
     if (*epsilon == 0){
-        return 202;
+        return INVALID_ARGUEMENT;
     }
 
-    return 0;
+    return NORMAL;
 }
 
 double factorial(double n){
@@ -104,19 +105,6 @@ double sqrt2_seq(double k){
     return pow(2, pow(2, -k));
 }
 
-// double sum(double (*f)(double), double start_n, double eps){
-//     double prev_val = f(start_n);
-//     start_n++;
-//     double val = prev_val + f(start_n);
-//     double n = start_n;
-//     while (fabs(val - prev_val) > eps){
-//         prev_val = val;
-//         n++;
-//         val = prev_val + f(n);
-//     }
-//     return val;
-// }
-
 double sum(double (*f)(double), double start_n, double eps){
     double prev_val = f(start_n);
     start_n++;
@@ -175,21 +163,21 @@ double dichotomy(double (*f)(double), double left, double right, double eps){
 
 int main(int argc, char** argv){
     double eps = 0;
-    int err_status = getOpts(argc, argv, &eps);
+    errorCodes err_status = getOpts(argc, argv, &eps);
 
-    if(err_status){ // handling errors from cli input
+    if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
-        case 101:
-            printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
+        case NOT_ENOUGH_ARGUEMENTS:
+            printf("%s \n", "Not enough number of argumnets. You have to pass one arguement.");
             break;
-        case 102:
-            printf("%s \n", "Too many argumnets. You have to pass two arguements.");
+        case TOO_MANY_ARGUEMENTS:
+            printf("%s \n", "Too many argumnets. You have to pass one arguement.");
             break;
-        case 201:
+        case INVALID_DOUBLE:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be a valid float number.");
             break;
-        case 202:
+        case INVALID_ARGUEMENT:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be more than 0.");
             break;
         }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "../err.h"
 
 int parse_double(char* proceeding_number, double* result_number){
     int flag = 0;
@@ -36,18 +37,22 @@ int parse_double(char* proceeding_number, double* result_number){
 int getOpts(int argc, char** argv, double* epsilon, double* x){
     if (argc != 3){
         if (argc < 3){
-            return 101; // not enough arguements
+            return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
         } else{
-            return 102; // to much arguements
+            return TOO_MANY_ARGUEMENTS; // to much arguements
         }
     }
 
     char* eps_option = argv[1];
     char* x_option = argv[2];
-    if (parse_double(eps_option, epsilon)) return 301;
-    if (parse_double(x_option, x)) return 301;
+    if (parse_double(eps_option, epsilon)) {
+        return INVALID_DOUBLE;
+    }
+    if (parse_double(x_option, x)){
+        return INVALID_DOUBLE;
+    }
 
-    return 0;
+    return NORMAL;
 }
 
 double factorial(double n){
@@ -106,17 +111,17 @@ double sum(double (*f)(double, double, double), double start_n, double eps, doub
 int main(int argc, char** argv){
     double eps = 0;
     double x = 0;
-    int err_status = getOpts(argc, argv, &eps, &x);
-    if(err_status){ // handling errors from cli input
+    errorCodes err_status = getOpts(argc, argv, &eps, &x);
+    if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
-        case 101:
+        case NOT_ENOUGH_ARGUEMENTS:
             printf("%s \n", "Not enough number of argumnets. You have to pass two arguements.");
             break;
-        case 102:
+        case TOO_MANY_ARGUEMENTS:
             printf("%s \n", "Too many argumnets. You have to pass two arguements.");
             break;
-        case 301:
+        case INVALID_DOUBLE:
             printf("%s \n", "Ivnalid arguement value (must be double).");
             break;
         }

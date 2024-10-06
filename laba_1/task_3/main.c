@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include "../err.h"
 
 typedef enum kOpts{
     OPT_Q,
@@ -61,9 +62,9 @@ int parse_double(char* proceeding_number, double* result_number){
 }
 
 
-int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
+errorCodes getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     if (argc < 4){
-        return 101; // not enough arguements
+        return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
     }
 
     const char* proceeding_option = argv[1]; // getting the flag string
@@ -82,14 +83,14 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
             *option = OPT_T;
             break;
         default:
-            return 202; // unknown flag type
+            return UNKNOWN_FLAG; // unknown flag type
             break;
         }
         if(proceeding_option[2]){ // if there are more than 1 sign after '-' or '/' (e. g. -qm)
-            return 202; // unknown flag type
+            return UNKNOWN_FLAG; // unknown flag type
         }
     } else{
-        return 201; // the arguemnet is not a flag
+        return NOT_A_FLAG; // the arguemnet is not a flag
     }
 
 
@@ -98,16 +99,16 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     case 0: // -q flag
         if (argc != 6){
             if (argc < 6){
-                return 101;
+                return NOT_ENOUGH_ARGUEMENTS;
             } else{
-                return 102;
+                return TOO_MANY_ARGUEMENTS;
             }
         }
         
         for(int i = 2; argv[i]; i++){
             double d;
             if(parse_double(argv[i], &d)){
-                return 301; // invalid arguement value (must be double)
+                return INVALID_DOUBLE; // invalid arguement value (must be double)
             }
             num_arguements[i - 2] = d;
         }
@@ -115,16 +116,16 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     case 1: // -m flag
         if (argc != 4){
             if (argc < 4){
-                return 101;
+                return NOT_ENOUGH_ARGUEMENTS;
             } else{
-                return 102;
+                return TOO_MANY_ARGUEMENTS;
             }
         }
 
         for(int i = 2; argv[i]; i++){
             int n;
             if(parse_int(argv[i], &n)){
-                return 302; // invalid arguement value (must be integer)
+                return INVALID_INT; // invalid arguement value (must be integer)
             }
             num_arguements[i - 2] = (double)n;
         }
@@ -132,16 +133,16 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
     case 2: // -t flag
         if (argc != 6){
             if (argc < 6){
-                return 101;
+                return NOT_ENOUGH_ARGUEMENTS;
             } else{
-                return 102;
+                return TOO_MANY_ARGUEMENTS;
             }
         }
         
         for(int i = 2; argv[i]; i++){
             double d;
             if(parse_double(argv[i], &d)){
-                return 301; // ivnalid arguement value (must be double)
+                return INVALID_DOUBLE; // ivnalid arguement value (must be double)
             }
             
             num_arguements[i - 2] = d;
@@ -149,7 +150,7 @@ int getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
         break;
     }
 
-    return 0;
+    return NORMAL;
 }
 
 // -q handler
@@ -328,26 +329,26 @@ int main(int argc, char** argv){
         hadlerOptT
     };
     
-    int err_status = getOpts(argc, argv, &option, values);
-    if(err_status){ // handling errors from cli input
+    errorCodes err_status = getOpts(argc, argv, &option, values);
+    if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
-        case 101:
+        case NOT_ENOUGH_ARGUEMENTS:
             printf("%s \n", "Not enough number of argumnets.");
             break;
-        case 102:
+        case TOO_MANY_ARGUEMENTS:
             printf("%s \n", "Too many argumnets for this flag.");
             break;
-        case 201:
+        case NOT_A_FLAG:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be a flag with starting with '-' or '/' (e. g. '-q').");
             break;
-        case 202:
+        case UNKNOWN_FLAG:
             printf("%s \n", "Unknown flag type.");
             break;
-        case 301:
+        case INVALID_DOUBLE:
             printf("%s \n", "Ivnalid arguement value (must be double).");
             break;
-        case 302:
+        case INVALID_INT:
             printf("%s \n", "Ivnalid arguement value (must be integer).");
             break;
         }
