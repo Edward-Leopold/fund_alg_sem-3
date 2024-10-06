@@ -12,7 +12,7 @@ int parse_double(char* proceeding_number, double* result_number){
     }
     for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
-        if (ch >= '0' || ch <= '9' || ch == '.'){
+        if ((ch >= '0' && ch <= '9') || ch == '.'){
             if (ch == '.' && flag) return 201;
             if (ch == '.'){
                 flag = 1;
@@ -136,7 +136,12 @@ int main(int argc, char** argv){
     printf("\n");
     printf("a: %f\n", sum(a_func, 0, eps, x));
     printf("b: %f\n", sum(b_func, 0, eps, x));
-    printf(x_is_1 ? "c: числовой ряд расходится, x должен быть меньше 1\n" : "c: %f\n", sum(c_func, 0, eps, x));
-    printf(x_is_1 ? "d: числовой ряд расходится, x должен быть меньше 1\n" : "d: %f\n", sum(d_func, 1, eps, x));
+    if (x_is_1){
+        printf("c: числовой ряд расходится, x должен быть меньше 1\n");
+        printf("d: числовой ряд расходится, x должен быть меньше 1\n");
+    } else{
+        printf("c: %f\n", sum(c_func, 0, eps, x));
+        printf("d: %f\n", sum(d_func, 1, eps, x));
+    }
     return 0;
 }
