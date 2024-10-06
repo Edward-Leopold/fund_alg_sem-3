@@ -5,6 +5,7 @@ typedef enum errorCodes{
     INVALID_ARGUEMENT,
     UNKNOWN_FLAG,
     NOT_A_FLAG,
+    INVALID_EPSILON,
     INVALID_INT,
     INVALID_DOUBLE,
     NORMAL

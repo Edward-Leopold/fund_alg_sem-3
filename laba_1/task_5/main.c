@@ -51,7 +51,9 @@ int getOpts(int argc, char** argv, double* epsilon, double* x){
     if (parse_double(x_option, x)){
         return INVALID_DOUBLE;
     }
-
+    if (*epsilon <= 0) {
+        return INVALID_EPSILON;
+    }
     return NORMAL;
 }
 
@@ -71,27 +73,23 @@ double double_factorial(double n) {
 
 
 double a_func(double n, double x, double prev_val){
-    if (prev_val == 0) return pow(x, n) / factorial(n);
-    // if (n == 0) return 1;
+    if (n == 0) return 1;
     return prev_val * x/n;
 }
 
 double b_func(double n, double x, double prev_val){
-    if (prev_val == 0) return (pow(-1, n) * pow(x, 2*n) / factorial(2*n));
-    // if (n == 0) return 1;
+    if (n == 0) return 1;
     return prev_val * (-1) * x*x / (2*n * (2*n - 1));
 }
 
 // насколько я понял ряды двух последних функций расходятся при x => 1
 double c_func(double n, double x, double prev_val){
-    if (prev_val == 0) return ((pow(3, 3*n) * pow(factorial(n), 3) * pow(x, 2*n)) / factorial(3*n));
-    // if (n == 0) return 1;
+    if (n == 0) return 1;
     return prev_val * ( (27 * x*x * n*n*n) / (27*n*n*n - 27*n*n + 6*n) );
 }
 
 double d_func(double n, double x, double prev_val){
-    if (prev_val == 0) return (pow(-1, n) * double_factorial(2*n - 1) * pow(x, 2*n)) / double_factorial(2*n);
-    // if(n == 1) return -(x * x)/2;
+    if(n == 1) return -(x * x)/2;
     return prev_val * ( ((-1)*x*x*(2*n - 1)) / (2*n) );
 }
 
@@ -123,6 +121,9 @@ int main(int argc, char** argv){
             break;
         case INVALID_DOUBLE:
             printf("%s \n", "Ivnalid arguement value (must be double).");
+            break;
+        case INVALID_EPSILON:
+            printf("%s \n", "Epsilon must be greater than 0.");
             break;
         }
         return 1;
