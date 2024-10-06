@@ -94,7 +94,7 @@ double e_seq(double n){
 }
 
 double pi_seq(double n){
-    return ((int)n % 2 == 0) ? ((4 * (-1) / (2*n - 1))) : ((4 * 1 / (2*n - 1))) ; 
+    return ((int)n % 2 == 0) ? (( -4 / (2*n - 1))) : (( 4 / (2*n - 1))) ; 
 }
 
 double ln2_seq(double n){
