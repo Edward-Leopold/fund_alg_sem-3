@@ -54,6 +54,37 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
     return NORMAL;
 }
 
+double a_func(double x){
+    return log(1 + x) / x;
+}
+
+double b_func(double x){
+    return exp(-x * x/2);
+}
+
+double c_func(double x){
+    return log(1 / (1 - x));
+}
+
+double d_func(double x){
+    return pow(x, x);
+}
+
+double integral(double (*f)(double), double eps){
+    double val = 0;
+    double left = 0;
+    double right = 1;
+    double interval = right - left;
+    double n = interval / eps;
+    // printf("%f\n", n);
+    for (int i = 0; i <= n; i++){
+        double x = (left + i * eps) + eps / 2;
+        val += eps * f(x);
+        // printf("%f %f\n", eps, f(x));
+    }
+    return val;
+}
+
 int main(int argc, char** argv){
     double eps = 0;
 
@@ -77,6 +108,10 @@ int main(int argc, char** argv){
         return 1;
     }
     
-    
+    printf("a: %f\n", integral(a_func, eps));
+    printf("b: %f\n", integral(b_func, eps));
+    printf("c: %f\n", integral(c_func, eps));
+    printf("d: %f\n", integral(d_func, eps));
+
     return 0;
 }
