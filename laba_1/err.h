@@ -1,3 +1,4 @@
+#pragma once
 
 typedef enum errorCodes{
     NOT_ENOUGH_ARGUEMENTS,
@@ -8,5 +9,6 @@ typedef enum errorCodes{
     INVALID_EPSILON,
     INVALID_INT,
     INVALID_DOUBLE,
+    UNABLE_TO_OPEN_FILE,
     NORMAL
 } errorCodes;

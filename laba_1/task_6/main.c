@@ -72,7 +72,7 @@ double d_func(double x){
 }
 
 double integral(double (*f)(double), double left, double right, double eps){
-    double val = 0;
+    double sum = 0;
     // double left = 0;
     // double right = 1;
     double interval = right - left;
@@ -80,10 +80,10 @@ double integral(double (*f)(double), double left, double right, double eps){
     // printf("%f\n", n);
     for (int i = 0; i < n; i++){
         double x = (left + i * eps) + eps / 2;
-        val += eps * f(x);
+        sum += eps * f(x);
         // printf("%f %f\n", eps, f(x));
     }
-    return val;
+    return sum;
 }
 
 int main(int argc, char** argv){
