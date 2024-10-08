@@ -2,23 +2,17 @@
 #include <math.h>
 #include "../err.h"
 
-errorCodes getOpts(int argc, char** argv, double* epsilon){
-    if (argc != 2){
-        if (argc < 2){
-            return NOT_ENOUGH_ARGUEMENTS;
-        } else{
-            return TOO_MANY_ARGUEMENTS; // to much arguements
-        }
-    }
-
-    const char* number_option = argv[1];
-    double int_num = 0;
+int parse_double(char* proceeding_number, double* result_number){
     int flag = 0;
     int digits_after_dot = 0;
-
-    for (int i = 0; number_option[i]; i++){
-        char ch = number_option[i];
-        if (ch >= '0' || ch <= '9' || ch == '.'){
+    int int_num = 0;
+    int is_negative = 0;
+    if (proceeding_number[0] == '-'){ // parsing negative double number
+        is_negative = 1;
+    }
+    for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
+        char ch = proceeding_number[i];
+        if ((ch >= '0' && ch <= '9') || ch == '.'){
             if (ch == '.' && flag) return 201;
             if (ch == '.'){
                 flag = 1;
@@ -30,13 +24,34 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
             int_num *= 10;
             int_num += ch - '0';
         } else {
-            return INVALID_DOUBLE;
+            return 1;
         }
     }
 
-    *epsilon = int_num / pow(10, digits_after_dot);
+    double temp = int_num / pow(10, digits_after_dot);
+    *result_number = is_negative ? -temp : temp;
+
+    return 0;
+}
+
+errorCodes getOpts(int argc, char** argv, double* epsilon){
+    if (argc != 2){
+        if (argc < 2){
+            return NOT_ENOUGH_ARGUEMENTS;
+        } else{
+            return TOO_MANY_ARGUEMENTS; // to much arguements
+        }
+    }
+
+    char* number_option = argv[1];
+    double int_num = 0;
+    int flag = 0;
+
+    if(parse_double(number_option, epsilon)){
+        return INVALID_DOUBLE;
+    }
     
-    if (*epsilon == 0){
+    if (*epsilon <= 0){
         return INVALID_ARGUEMENT;
     }
 
