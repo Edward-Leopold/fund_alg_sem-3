@@ -105,29 +105,48 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** ou
     return NORMAL;
 }
 
-void handleOptD(FILE *in_file, FILE *out_file){
+int handleOptD(FILE *in_file, FILE *out_file){
     char ch = 0;
     while ((ch = (char)fgetc(in_file)) != EOF){
         if(!(ch <= '9' && ch >= '0')){
-            fputc(ch, out_file);
-            printf("%c", ch);
+            if(fputc(ch, out_file) == EOF) {
+                return 1;
+            }
         }
         
     }
     
-    
-    return;
+    return 0;
 }
 
-void handleOptI(FILE *in_file, FILE *out_file){
+int handleOptI(FILE *in_file, FILE *out_file){
+    int count = 0;
+    int error_int; 
+    char ch = 0;
+    while((ch = (char)fgetc(in_file))){
+        if (ch == '\n' || ch == EOF){
+            if (ch == EOF){
+                error_int = fprintf(out_file, "%d", count);
+                break;
+            }
+            error_int = fprintf(out_file, "%d\n", count);
+            count = 0;
+        } else if((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')){
+            count++;
+        }
+        if(error_int < 0) { // fprintf returns negative int if error occurs in writing in file 
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+int handleOptS(FILE *in_file, FILE *out_file){
    
 }
 
-void handleOptS(FILE *in_file, FILE *out_file){
-   
-}
-
-void handleOptA(FILE *in_file, FILE *out_file){
+int handleOptA(FILE *in_file, FILE *out_file){
    
 }
 
@@ -136,7 +155,7 @@ int main(int argc, char** argv){
     FILE *in_file;
     FILE *out_file;
 
-    void (*handlers[4])(FILE*, FILE*) = {
+    int (*handlers[4])(FILE*, FILE*) = {
         handleOptD,
         handleOptI,
         handleOptS,
@@ -170,7 +189,11 @@ int main(int argc, char** argv){
     }
 
     printf("opt_key: %d \n", flag);
-    handlers[flag](in_file, out_file);
+    if(handlers[flag](in_file, out_file)) {
+        printf("Error writing to file occured\n");
+    } else{
+        printf("Output file has been successfully changed\n");
+    }
     fclose(in_file);
     fclose(out_file);
     return 0;
