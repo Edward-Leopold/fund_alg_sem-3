@@ -106,14 +106,13 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** ou
 }
 
 int handleOptD(FILE *in_file, FILE *out_file){
-    char ch = 0;
-    while ((ch = (char)fgetc(in_file)) != EOF){
+    int ch = 0;
+    while ((ch = fgetc(in_file)) != EOF){
         if(!(ch <= '9' && ch >= '0')){
             if(fputc(ch, out_file) == EOF) {
                 return 1;
             }
         }
-        
     }
     
     return 0;
@@ -122,8 +121,8 @@ int handleOptD(FILE *in_file, FILE *out_file){
 int handleOptI(FILE *in_file, FILE *out_file){
     int count = 0;
     int error_int; 
-    char ch = 0;
-    while((ch = (char)fgetc(in_file))){
+    int ch = 0;
+    while((ch = fgetc(in_file))){
         if (ch == '\n' || ch == EOF){
             if (ch == EOF){
                 error_int = fprintf(out_file, "%d", count);
@@ -143,11 +142,32 @@ int handleOptI(FILE *in_file, FILE *out_file){
 }
 
 int handleOptS(FILE *in_file, FILE *out_file){
-   
+    int count = 0;
+    int error_int; 
+    int ch = 0;
+    while((ch = fgetc(in_file))){
+        if (ch == '\n' || ch == EOF){
+            if (ch == EOF){
+                error_int = fprintf(out_file, "%d", count);
+                break;
+            }
+            error_int = fprintf(out_file, "%d\n", count);
+            count = 0;
+        } else if(!(ch >= 'A' && ch <= 'Z') && !(ch >= 'a' && ch <= 'z') && !(ch >= '0' && ch <= '9') && !(ch == ' ')){
+            count++;
+        }
+        if(error_int < 0) { // fprintf returns negative int if error occurs in writing in file 
+            return 1;
+        }
+    }
+
+    return 0;
 }
 
 int handleOptA(FILE *in_file, FILE *out_file){
-   
+
+
+    return 0;
 }
 
 int main(int argc, char** argv){
