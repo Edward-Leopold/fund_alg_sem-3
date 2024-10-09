@@ -165,7 +165,36 @@ int handleOptS(FILE *in_file, FILE *out_file){
 }
 
 int handleOptA(FILE *in_file, FILE *out_file){
-
+    int error_int; 
+    int ch = 0;
+    while((ch = fgetc(in_file)) != EOF){
+        if((ch >= '0' && ch <= '9') || ch == '\n') { 
+            if(fputc(ch, out_file) == EOF){
+                return 1;
+            }
+        } else{ //отличные от символов цифр
+            int num = ch;
+            int i = 1, j, temp; 
+            char hex_num[100]; 
+            
+            while (num != 0) { 
+                temp = num % 16; 
+                
+                if (temp < 10) 
+                    temp = temp + 48; 
+                else
+                    temp = temp + 55; 
+                hex_num[i++] = temp; 
+                num = num / 16; 
+            } 
+            for (j = i - 1; j > 0; j--){
+                error_int = fprintf(out_file, "%c", hex_num[j]);
+            }
+        }
+        if(error_int < 0) { // fprintf returns negative int if error occurs in writing in file 
+            return 1;
+        }
+    }
 
     return 0;
 }
