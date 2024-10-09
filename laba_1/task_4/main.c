@@ -68,24 +68,21 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_
         return UNABLE_TO_OPEN_FILE;
     }
 
-
-
     if(is_n){
         if (argc < 4){
             return NOT_ENOUGH_ARGUEMENTS;
         } else if(argc > 4) {
             return TOO_MANY_ARGUEMENTS;
-        } // переделать надо
-
+        }
 
         out_file = fopen(argv[3], "w");
-        // if (out_file == NULL){
-        //     return UNABLE_TO_OPEN_FILE;
-        // }
     } else{
+        if(argc > 3){
+            return TOO_MANY_ARGUEMENTS;
+        }
+        // creating prefixed file name 
         char* in_file_name = argv[2];
         char out_file_name[5 + strLen(in_file_name)];
-        // printf("%ld\n", sizeof(out_file_name));
         char* prefix = "out_";
         for (int i = 0; prefix[i]; i++){
             out_file_name[i] = prefix[i];
@@ -94,7 +91,6 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_
             out_file_name[j + 4] = in_file_name[j];
         }
         out_file_name[4 + strLen(in_file_name)] = '\0';
-        // printf("%ld\n", sizeof(out_file_name));
         out_file = fopen(out_file_name, "w");
     }
 
@@ -120,7 +116,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Unknown flag");
             break;
         case NOT_A_FLAG:
-            printf("%s \n", "passed arguement is not a flag");
+            printf("%s \n", "Passed arguement is not a flag. The first arguement must be a flag.");
             break;
         case UNABLE_TO_OPEN_FILE:
             printf("Cannot open file \n");
