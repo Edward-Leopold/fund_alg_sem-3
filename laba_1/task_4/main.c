@@ -48,7 +48,7 @@ int strLen(char* s){
     return len;
 }
 
-errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_file){
+errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** out_file){
     if (argc < 3){
         return NOT_ENOUGH_ARGUEMENTS;
     } else if(argc > 4) {
@@ -63,8 +63,8 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_
     *flag = flag_array[0];
     int is_n = flag_array[1];
 
-    in_file = fopen(argv[2], "r");
-    if (in_file == NULL){
+    *in_file = fopen(argv[2], "r");
+    if (*in_file == NULL){
         return UNABLE_TO_OPEN_FILE;
     }
 
@@ -75,7 +75,11 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_
             return TOO_MANY_ARGUEMENTS;
         }
 
-        out_file = fopen(argv[3], "w");
+        *out_file = fopen(argv[3], "w");
+
+        if (*out_file == NULL){
+            return UNABLE_TO_OPEN_FILE;
+        }
     } else{
         if(argc > 3){
             return TOO_MANY_ARGUEMENTS;
@@ -91,10 +95,40 @@ errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE* in_file, FILE* out_
             out_file_name[j + 4] = in_file_name[j];
         }
         out_file_name[4 + strLen(in_file_name)] = '\0';
-        out_file = fopen(out_file_name, "w");
+        *out_file = fopen(out_file_name, "w");
+
+        if (*out_file == NULL){
+            return UNABLE_TO_OPEN_FILE;
+        }
     }
 
     return NORMAL;
+}
+
+void handleOptD(FILE *in_file, FILE *out_file){
+    char ch = 0;
+    while ((ch = (char)fgetc(in_file)) != EOF){
+        if(!(ch <= '9' && ch >= '0')){
+            fputc(ch, out_file);
+            printf("%c", ch);
+        }
+        
+    }
+    
+    
+    return;
+}
+
+void handleOptI(FILE *in_file, FILE *out_file){
+   
+}
+
+void handleOptS(FILE *in_file, FILE *out_file){
+   
+}
+
+void handleOptA(FILE *in_file, FILE *out_file){
+   
 }
 
 int main(int argc, char** argv){
@@ -102,7 +136,14 @@ int main(int argc, char** argv){
     FILE *in_file;
     FILE *out_file;
 
-    errorCodes err_status = getOpts(argc, argv, &flag, in_file, out_file);
+    void (*handlers[4])(FILE*, FILE*) = {
+        handleOptD,
+        handleOptI,
+        handleOptS,
+        handleOptA
+    };
+
+    errorCodes err_status = getOpts(argc, argv, &flag, &in_file, &out_file);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
@@ -129,6 +170,8 @@ int main(int argc, char** argv){
     }
 
     printf("opt_key: %d \n", flag);
-
+    handlers[flag](in_file, out_file);
+    fclose(in_file);
+    fclose(out_file);
     return 0;
 }
