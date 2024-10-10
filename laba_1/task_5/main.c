@@ -54,6 +54,13 @@ int getArgs(int argc, char** argv, double* epsilon, double* x){
     if (*epsilon <= 0) {
         return INVALID_EPSILON;
     }
+    if(*epsilon < 0.000000000000001){
+        return TOO_SMALL_EPSILON;
+    }
+    if(*epsilon > 1){
+        return TOO_BIG_EPSILON;
+    }
+
     return NORMAL;
 }
 
@@ -124,6 +131,12 @@ int main(int argc, char** argv){
             break;
         case INVALID_EPSILON:
             printf("%s \n", "Epsilon must be greater than 0.");
+            break;
+        case TOO_SMALL_EPSILON:
+            printf("%s \n", "Epsilon must be greater than 0.000000001");
+            break;
+        case TOO_BIG_EPSILON:
+            printf("%s \n", "Epsilon must be smaller than or equal 1");
             break;
         }
         return 1;
