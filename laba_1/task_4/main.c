@@ -1,4 +1,7 @@
+#define _XOPEN_SOURCE_EXTENDED 1
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "../err.h"
 
 typedef enum kOpts{
@@ -80,6 +83,12 @@ errorCodes getArgs(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** ou
         if (*out_file == NULL){
             return UNABLE_TO_OPEN_FILE;
         }
+
+        // if the same file
+        if (strcmp(realpath(argv[2], NULL), realpath(argv[3], NULL)) == 0){
+            return UNABLE_TO_OPEN_FILE;
+        }
+        
     } else{
         if(argc > 3){
             return TOO_MANY_ARGUEMENTS;
