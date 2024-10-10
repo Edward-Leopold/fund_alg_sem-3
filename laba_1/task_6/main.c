@@ -71,19 +71,35 @@ double d_func(double x){
     return pow(x, x);
 }
 
+// double integral(double (*f)(double), double left, double right, double eps){
+//     double sum = 0;
+//     double interval = right - left;
+//     double n = interval / eps;
+//     for (int i = 0; i < n; i++){
+//         double x = (left + i * eps) + eps / 2;
+//         sum += eps * f(x);
+//     }
+//     return sum;
+// }
+
 double integral(double (*f)(double), double left, double right, double eps){
     double sum = 0;
-    // double left = 0;
-    // double right = 1;
     double interval = right - left;
-    double n = interval / eps;
-    // printf("%f\n", n);
-    for (int i = 0; i < n; i++){
-        double x = (left + i * eps) + eps / 2;
-        sum += eps * f(x);
-        // printf("%f %f\n", eps, f(x));
-    }
-    return sum;
+    double prev_integ;
+    double integ = 0;
+    int n = 2;
+    do{
+        prev_integ = integ;
+        integ = 0;
+        double part = interval / (double)n;
+        for (int i = 0; i < n; i++){
+            double x = (left + i * part) + part/2;
+            integ += part * f(x); 
+        }
+        n *= 2;
+    } while (fabs(prev_integ - integ) > eps);
+    
+    return integ;
 }
 
 int main(int argc, char** argv){
