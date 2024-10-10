@@ -7,6 +7,8 @@ typedef enum errorCodes{
     UNKNOWN_FLAG,
     NOT_A_FLAG,
     INVALID_EPSILON,
+    TOO_SMALL_EPSILON,
+    TOO_BIG_EPSILON,
     INVALID_INT,
     INVALID_DOUBLE,
     UNABLE_TO_OPEN_FILE,

@@ -62,7 +62,7 @@ int parse_double(char* proceeding_number, double* result_number){
 }
 
 
-errorCodes getOpts(int argc, char** argv, kOpts *option, double *num_arguements){
+errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements){
     if (argc < 4){
         return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
     }
@@ -166,7 +166,7 @@ void quad_equation(double a, double b, double c, double eps){
     double roots[2];
     if (a == 0 || b == 0 || c == 0){
         if(a == 0 && b == 0 && c == 0) {
-            printf("нет корней\n");
+            printf("бесконечность корней\n");
             return;
         }
         if(a == 0){
@@ -329,7 +329,7 @@ int main(int argc, char** argv){
         hadlerOptT
     };
     
-    errorCodes err_status = getOpts(argc, argv, &option, values);
+    errorCodes err_status = getArgs(argc, argv, &option, values);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {

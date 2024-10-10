@@ -11,7 +11,7 @@ typedef enum kOpts{
     OPT_F
 } kOpts;
 
-errorCodes GetOpts(int argc, char** argv, kOpts *option, int *number){
+errorCodes getArgs(int argc, char** argv, kOpts *option, int *number){
     if (argc != 3){
         if (argc < 3){
             return NOT_ENOUGH_ARGUEMENTS;
@@ -222,7 +222,7 @@ int main(int argc, char** argv){
         HandleOptF
     };
     
-    const errorCodes parse_err_status = GetOpts(argc, argv, &option, &number);
+    const errorCodes parse_err_status = getArgs(argc, argv, &option, &number);
     if (parse_err_status != NORMAL){
         switch (parse_err_status)
         {

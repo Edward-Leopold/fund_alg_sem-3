@@ -34,12 +34,12 @@ int parse_double(char* proceeding_number, double* result_number){
     return 0;
 }
 
-errorCodes getOpts(int argc, char** argv, double* epsilon){
+errorCodes getArgs(int argc, char** argv, double* epsilon){
     if (argc != 2){
         if (argc < 2){
             return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
         } else{
-            return TOO_MANY_ARGUEMENTS; // to much arguements
+            return TOO_MANY_ARGUEMENTS; // too many arguements
         }
     }
 
@@ -49,6 +49,12 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
     }
     if (*epsilon <= 0){
         return INVALID_EPSILON;
+    }
+    if (*epsilon < 0.000000001){
+        return TOO_SMALL_EPSILON;
+    }
+    if (*epsilon > 1){
+        return TOO_BIG_EPSILON;
     }
 
     return NORMAL;
@@ -105,7 +111,7 @@ double integral(double (*f)(double), double left, double right, double eps){
 int main(int argc, char** argv){
     double eps = 0;
 
-    errorCodes err_status = getOpts(argc, argv, &eps);
+    errorCodes err_status = getArgs(argc, argv, &eps);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
@@ -120,6 +126,12 @@ int main(int argc, char** argv){
             break;
         case INVALID_EPSILON:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be greater than 0.");
+            break;
+        case TOO_SMALL_EPSILON:
+            printf("Entered epsilon is too small, enter a bigger epsilon\n");
+            break;
+        case TOO_BIG_EPSILON:
+            printf("Entered epsilon is too big, enter an epsilon smaller than 1\n");
             break;
         }
         return 1;

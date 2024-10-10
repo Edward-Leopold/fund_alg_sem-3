@@ -48,7 +48,7 @@ int strLen(char* s){
     return len;
 }
 
-errorCodes getOpts(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** out_file){
+errorCodes getArgs(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** out_file){
     if (argc < 3){
         return NOT_ENOUGH_ARGUEMENTS;
     } else if(argc > 4) {
@@ -211,7 +211,7 @@ int main(int argc, char** argv){
         handleOptA
     };
 
-    errorCodes err_status = getOpts(argc, argv, &flag, &in_file, &out_file);
+    errorCodes err_status = getArgs(argc, argv, &flag, &in_file, &out_file);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {

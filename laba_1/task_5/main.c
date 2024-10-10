@@ -34,7 +34,7 @@ int parse_double(char* proceeding_number, double* result_number){
     return 0;
 }
 
-int getOpts(int argc, char** argv, double* epsilon, double* x){
+int getArgs(int argc, char** argv, double* epsilon, double* x){
     if (argc != 3){
         if (argc < 3){
             return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
@@ -109,7 +109,7 @@ double sum(double (*f)(double, double, double), double start_n, double eps, doub
 int main(int argc, char** argv){
     double eps = 0;
     double x = 0;
-    errorCodes err_status = getOpts(argc, argv, &eps, &x);
+    errorCodes err_status = getArgs(argc, argv, &eps, &x);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
