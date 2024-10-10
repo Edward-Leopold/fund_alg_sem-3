@@ -69,8 +69,8 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, int *number){
                     return INVALID_INT;
                 }
             }
-            if (temp == 0) {
-                return INVALID_ARGUEMENT; // the number must be natural
+            if (temp <= 0) {
+                return INVALID_INT; // the number must be natural
             }
             *number = temp;
             is_set_num = 1;
@@ -236,7 +236,7 @@ int main(int argc, char** argv){
             printf("%s \n", "Invalid arguement have been passed. You have to pass flag and natural number.");
             break;
         case INVALID_INT:
-            printf("%s \n", "An error occured while reading integer number.");
+            printf("%s \n", "An error occured while reading integer number. Passed number must be valid int natural number.");
             break;
         case UNKNOWN_FLAG:
             printf("%s \n", "Error. Unknown flag.");
@@ -247,6 +247,10 @@ int main(int argc, char** argv){
 
     if(option == OPT_E && number > 10) {
         printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
+        return 1;
+    }
+    if(option == OPT_F && number > 20){
+        printf("Passed number for factorial must be less than 21\n");
         return 1;
     }
     handlers[option](number);
