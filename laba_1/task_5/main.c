@@ -130,17 +130,29 @@ int main(int argc, char** argv){
     }
     
     
-    int x_is_1 = (x >= 1) ? 1 : 0;
+    // int x_is_1 = (x >= 1) ? 1 : 0;
+
+    int is_c_invalid = 0;
+    int is_d_invalid = 0;
+    if (x <= -1 || x >= 1 ){
+        is_c_invalid = 1;
+    }
+    if (x < -1 || x > 1 ){
+        is_d_invalid = 1;
+    }
 
     printf("eps = %f, x = %f \n", eps, x);
     printf("\n");
     printf("a: %f\n", sum(a_func, 0, eps, x));
     printf("b: %f\n", sum(b_func, 0, eps, x));
-    if (x_is_1){
-        printf("c: числовой ряд расходится, x должен быть меньше 1\n");
-        printf("d: числовой ряд расходится, x должен быть меньше 1\n");
+    if (is_c_invalid){
+        printf("c: числовой ряд расходится, x должен быть строго меньше 1 или строго больше -1 \n");
     } else{
         printf("c: %f\n", sum(c_func, 0, eps, x));
+    }
+    if (is_d_invalid){
+        printf("d: числовой ряд расходится, x должен быть меньше или равен 1 или x должен быть больше или равен -1\n");
+    } else{
         printf("d: %f\n", sum(d_func, 1, eps, x));
     }
     return 0;
