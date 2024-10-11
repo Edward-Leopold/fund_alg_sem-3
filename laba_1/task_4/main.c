@@ -78,17 +78,19 @@ errorCodes getArgs(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** ou
             return TOO_MANY_ARGUEMENTS;
         }
 
-        *out_file = fopen(argv[3], "w");
-
-        if (*out_file == NULL){
+        if (!realpath(argv[3], NULL)){
             return UNABLE_TO_OPEN_FILE;
         }
-
         // if the same file
         if (strcmp(realpath(argv[2], NULL), realpath(argv[3], NULL)) == 0){
             return UNABLE_TO_OPEN_FILE;
         }
-        
+
+        *out_file = fopen(argv[3], "w");
+        if (*out_file == NULL){
+            return UNABLE_TO_OPEN_FILE;
+        }
+
     } else{
         if(argc > 3){
             return TOO_MANY_ARGUEMENTS;
