@@ -11,6 +11,13 @@ typedef enum kOpts{
     OPT_F
 } kOpts;
 
+typedef enum errHandlersCodes{
+    NOT_SIMPLE_NOT_COMPOSITE = 1,
+    TOO_BIG_FACTORIAL = 2,
+    TOO_BIG_NUMBER_FOR_TABLE = 3, 
+    NO_DENOMINATOR = 4
+} errHandlersCodes;
+
 errorCodes getArgs(int argc, char** argv, kOpts *option, int *number){
     if (argc != 3){
         if (argc < 3){
@@ -96,35 +103,37 @@ int getLenghtOfInt(int n){
     return len;
 }
 
-void HandlerOptH(int number) {
-    for (int i = 1; i <= 100; ++i) {
-        if (!(i % number)) {
-            printf("%d\n", i);
-        }
+int HandlerOptH(int number, long long ans[]) {
+    int temp = 0;
+    int is_no_denominator = 1;
+    for (int i = number; i <= 100; i += number ){
+        ans[temp] = i;
+        temp++;
+        is_no_denominator = 0;
     }
-
-    return;
+    if (is_no_denominator) return NO_DENOMINATOR;
+    ans[temp] = 0;
+    return 0;
 }
 
-void HandlerOptP(int number) {
-    int flag = 1;
+int HandlerOptP(int number, long long ans[]) {
+    if(number == 1){
+        return NOT_SIMPLE_NOT_COMPOSITE;
+    }
 
+    ans[0] = 1;
     for (int i = 2; i <= sqrt(number); ++i) {
         if (!(number % i)) {
-            flag = 0;
+            ans[0] = 0;
+            break;
         }
     } 
 
-    if (flag) {
-        printf("%d is simple\n", number);
-    } else {
-        printf("%d is not simple\n", number);
-    }
-
-    return;
+    ans[1] = 0;
+    return 0;
 }
 
-void HandleOptS(int number) {
+int HandlerOptS(int number, long long ans[]) {
     int num = number;
     int i = 1, j, temp; 
     char hex_num[100]; 
@@ -132,97 +141,72 @@ void HandleOptS(int number) {
     while (num != 0) { 
         temp = num % 16; 
          
-        if (temp < 10) 
-            temp = temp + 48; 
-        else
-            temp = temp + 55; 
+        temp = (temp < 10) ? temp + '0' : temp + 'A' - 10;
         hex_num[i++] = temp; 
         num = num / 16; 
     } 
-    printf("Hexadecimal value is: "); 
-    for (j = i - 1; j > 0; j--) 
-        printf("%c ", hex_num[j]);
-    printf("\n");
-
-    return;
+    
+    int pos = 0;
+    for (j = i - 1; j > 0; j--) {
+        ans[pos] = hex_num[j];
+        pos++;
+    }
+    ans[pos] = 0;
+    return 0;
 }
 
-void HandleOptE(int number) {
-    const int symbols_in_row = 20;
-    int max_power = number;
-    for (int power = 1; power <= max_power; power++){
-        for (int base = 1; base <= 5; base++){
-            int value = pow(base, power);
-
-            int value_symbs = getLenghtOfInt(value);
-            int base_symbs = (base == 10) ? 2 : 1;
-            int power_symbs = (power == 10) ? 2 : 1;
-            int blank_symbs = symbols_in_row - value_symbs - base_symbs - power_symbs - 4;
-
-            printf("%d^%d = %d", base, power, value);
-            while(blank_symbs != 0){
-                printf(" ");
-                blank_symbs--;
-            }
-            printf("| ");
-        }
-        printf("\n");
-    }
-    for (int j = symbols_in_row * 5 + 5; j != 0; j--) printf("=");
-    printf("\n");
-    for (int power = 1; power <= max_power; power++){
-        for (int base = 6; base <= 10; base++){
-            int value = pow(base, power);
-
-            int value_symbs = getLenghtOfInt(value);
-            int base_symbs = (base == 10) ? 2 : 1;
-            int power_symbs = (power == 10) ? 2 : 1;
-            int blank_symbs = symbols_in_row - value_symbs - base_symbs - power_symbs - 4;
-
-            printf("%d^%d = %d", base, power, value);
-            while(blank_symbs != 0){
-                printf(" ");
-                blank_symbs--;
-            }
-            printf("| ");
-        }
-        printf("\n");
+int HandlerOptE(int number, long long ans[]) {
+    if (number > 10) {
+        return TOO_BIG_NUMBER_FOR_TABLE;
     }
 
-    return;
+    for (int i = 1; i <= 10; i++) {
+        long long int base = i;
+        for (int j = 1; j <= number; j++) {
+            int position = (i - 1) * number + (j - 1); 
+            ans[position] = base;
+            base *= i;
+        }
+    }
+    ans[10 * number] = 0; 
+    return 0;
 }
 
-void HandleOptA(int number) {
+int HandlerOptA(int number, long long ans[]) {
     int sum = 0;
     for (int i = 1; i <= number; i++){
         sum += i;
     }
-    printf("%d \n", sum);
-    return;
+    ans[0] = sum;
+    ans[1] = 0;
+    return 0;
 }
 
-void HandleOptF(int number){
-    long long factotial = 1;
+int HandlerOptF(int number, long long ans[]){
+    if(number > 20) return TOO_BIG_FACTORIAL;
+    long long factorial = 1;
     for (int i = 1; i <= number; i++){
-        factotial *= i;
+        factorial *= i;
     }
-    printf("%lld \n", factotial);
-    return;
+    ans[0] = factorial;
+    ans[1] = 0;
+    return 0;
 }
 
 int main(int argc, char** argv){
     kOpts option = 0;
     int number = 0;
-    void (*handlers[6])(int) = {
+    long long answer[101];
+    int (*handlers[6])(int, long long[]) = {
         HandlerOptH,
         HandlerOptP,
-        HandleOptS,
-        HandleOptE,
-        HandleOptA,
-        HandleOptF
+        HandlerOptS,
+        HandlerOptE,
+        HandlerOptA,
+        HandlerOptF
     };
     
-    const errorCodes parse_err_status = getArgs(argc, argv, &option, &number);
+    const errorCodes parse_err_status = getArgs(argc, argv, &option, &number); 
     if (parse_err_status != NORMAL){
         switch (parse_err_status)
         {
@@ -245,15 +229,48 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    if(option == OPT_E && number > 10) {
-        printf("%s \n", "Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10.");
-        return 1;
-    }
-    if(option == OPT_F && number > 20){
+    int hadler_err_status = handlers[option](number, answer);
+    switch (hadler_err_status){
+    case NOT_SIMPLE_NOT_COMPOSITE:
+        printf("1 is not simple nor composite\n");
+        return 0;
+    case NO_DENOMINATOR:
+        printf("There are no denominator of %d\n", number);
+        return 0;
+    case TOO_BIG_FACTORIAL:
         printf("Passed number for factorial must be less than 21\n");
         return 1;
+    case TOO_BIG_NUMBER_FOR_TABLE:
+        printf("Invalid number for flag -e. The value of number passed to -e flag must be less than or equal to 10\n");
+        return 1;
+    default:
+        switch (option) {
+                case OPT_H:
+                    for (int i = 0; answer[i]; i++){
+                        printf("%lld\n", answer[i]);
+                    }
+                    return 0;
+                case OPT_P:
+                    if (answer[0]) printf("%d is simple\n", number);
+                    else printf("%d is not simple\n", number);
+                    break;
+                case OPT_S:
+                    for (int i = 0; answer[i]; i++) printf("%c ", (char) answer[i]);
+                    printf("\n");
+                    break;
+                case OPT_E:
+                    for (int i = 0; answer[i]; i++) {
+                        printf("%13lld", answer[i]);
+                        if ((i + 1) % number == 0) printf("\n\n");
+                    }
+                    break;
+                default:
+                    printf("%lld", answer[0]);
+                    printf("\n");
+                    break;
+            }
+            return 0;
     }
-    handlers[option](number);
 
     return 0;
 }
