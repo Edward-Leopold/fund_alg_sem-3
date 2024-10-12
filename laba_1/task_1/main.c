@@ -122,7 +122,7 @@ int HandlerOptP(int number, long long ans[]) {
     }
 
     ans[0] = 1;
-    for (int i = 2; i <= sqrt(number); ++i) {
+    for (int i = 2; i*i <= number; ++i) {
         if (!(number % i)) {
             ans[0] = 0;
             break;
