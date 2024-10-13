@@ -322,14 +322,14 @@ void hadlerOptT(double* vals){
 
 int main(int argc, char** argv){
     kOpts option = 0;
-    double values[4];
+    double args_values[4];
     void (*handlers[3])(double*) = {
         handlerOptQ,
         handlerOptM,
         hadlerOptT
     };
     
-    errorCodes err_status = getArgs(argc, argv, &option, values);
+    errorCodes err_status = getArgs(argc, argv, &option, args_values);
     if(err_status != NORMAL){ // handling errors from cli input
         switch (err_status)
         {
@@ -354,7 +354,7 @@ int main(int argc, char** argv){
         }
         return 1;
     } else{
-        handlers[option](values);
+        handlers[option](args_values);
     }
     return 0;
 }
