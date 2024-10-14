@@ -253,7 +253,7 @@ int hadlerOptT(double* vals){
             cath2 = b;
         }
 
-        double pif = sqrt(cath1*cath1 + pow(cath2, 2));
+        double pif = sqrt(cath1*cath1 + cath2*cath2);
         if (fabs(hyp - pif) <= eps) {
             is_triangle = 1;
         }
