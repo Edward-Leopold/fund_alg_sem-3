@@ -70,10 +70,10 @@ int parse_double(char* proceeding_number, double* result_number){
 
 errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements){
     if (argc < 4){
-        return NOT_ENOUGH_ARGUEMENTS; // not enough arguements
+        return NOT_ENOUGH_ARGUEMENTS;
     }
 
-    const char* proceeding_option = argv[1]; // getting the flag string
+    const char* proceeding_option = argv[1];
 
     // checking the flag type
     if (proceeding_option[0] == '-' || proceeding_option[0] == '/'){
@@ -89,20 +89,20 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements)
             *option = OPT_T;
             break;
         default:
-            return UNKNOWN_FLAG; // unknown flag type
+            return UNKNOWN_FLAG; 
             break;
         }
-        if(proceeding_option[2]){ // if there are more than 1 sign after '-' or '/' (e. g. -qm)
-            return UNKNOWN_FLAG; // unknown flag type
+        if(proceeding_option[2]){
+            return UNKNOWN_FLAG; 
         }
     } else{
-        return NOT_A_FLAG; // the arguemnet is not a flag
+        return NOT_A_FLAG;
     }
 
 
     switch (*option)
     {
-    case 0: // -q flag
+    case OPT_Q: 
         if (argc != 6){
             if (argc < 6){
                 return NOT_ENOUGH_ARGUEMENTS;
@@ -114,12 +114,12 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements)
         for(int i = 2; argv[i]; i++){
             double d;
             if(parse_double(argv[i], &d)){
-                return INVALID_DOUBLE; // invalid arguement value (must be double)
+                return INVALID_DOUBLE;
             }
             num_arguements[i - 2] = d;
         }
         break;
-    case 1: // -m flag
+    case OPT_M:
         if (argc != 4){
             if (argc < 4){
                 return NOT_ENOUGH_ARGUEMENTS;
@@ -131,12 +131,12 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements)
         for(int i = 2; argv[i]; i++){
             int n;
             if(parse_int(argv[i], &n)){
-                return INVALID_INT; // invalid arguement value (must be integer)
+                return INVALID_INT;
             }
             num_arguements[i - 2] = (double)n;
         }
         break;
-    case 2: // -t flag
+    case OPT_T:
         if (argc != 6){
             if (argc < 6){
                 return NOT_ENOUGH_ARGUEMENTS;
@@ -148,7 +148,7 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements)
         for(int i = 2; argv[i]; i++){
             double d;
             if(parse_double(argv[i], &d)){
-                return INVALID_DOUBLE; // ivnalid arguement value (must be double)
+                return INVALID_DOUBLE; 
             }
             
             num_arguements[i - 2] = d;
