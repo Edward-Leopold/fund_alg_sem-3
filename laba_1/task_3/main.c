@@ -8,6 +8,13 @@ typedef enum kOpts{
     OPT_T
 } kOpts;
 
+typedef enum errHandlersCodes{
+    INFINITY_OF_ROOTS = -1,
+    NO_ROOTS = -2,
+    NOT_NATURAL = -3,
+    NOT_POSITIVE_SIDES = -4,
+} errHandlersCodes;
+
 int parse_int(char* proceeding_number, int* result_number){
     int temp = 0;
     int is_negative = 0;
@@ -60,7 +67,6 @@ int parse_double(char* proceeding_number, double* result_number){
 
     return 0;
 }
-
 
 errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements){
     if (argc < 4){
@@ -154,20 +160,10 @@ errorCodes getArgs(int argc, char** argv, kOpts *option, double *num_arguements)
 }
 
 // -q handler
-void print_roots(double* roots){
-    if(roots[0] && roots[1]){
-        printf("корни x1 = %f, x2 = %f;\n", roots[0], roots[1]);
-    } else {
-        printf("корень x = %f;\n", roots[0]);
-    }
-}
-
-void quad_equation(double a, double b, double c, double eps){
-    double roots[2];
+int quad_equation(double a, double b, double c, double eps, int* num_of_roots, double roots[2]){
     if (a == 0 || b == 0 || c == 0){
         if(a == 0 && b == 0 && c == 0) {
-            printf("бесконечность корней\n");
-            return;
+            return INFINITY_OF_ROOTS;
         }
         if(a == 0){
             if (b != 0 && c != 0) { // bx = -c
@@ -176,9 +172,9 @@ void quad_equation(double a, double b, double c, double eps){
             if (b != 0 && c == 0){ // bx = 0
                 roots[0] = 0;
             } else{ // c = 0
-                printf("нет корней\n");
-                return;
+                return NO_ROOTS;
             }
+            *num_of_roots = 1;
         }
         if (b == 0){
             if (a != 0 && c != 0){ // a*x^2 = -c
@@ -186,102 +182,53 @@ void quad_equation(double a, double b, double c, double eps){
                 if (right_side > 0){
                     roots[0] = sqrt(right_side);
                     roots[1] = -sqrt(right_side);
+                    *num_of_roots = 2;
                 } else{ // sqrt from negative number
-                    printf("нет корней\n");
-                    return;
+                    return NO_ROOTS;
                 }
             }
             if (a != 0 && c == 0){ // a*x^2 = 0
                 roots[0] = 0;
+                *num_of_roots = 1;
             } else{ // c = 0
-                printf("нет корней\n");
-                return;
+                return NO_ROOTS;
             }
         }
     } else{
-        double d = pow(b, 2) - 4*a*c;
-        printf("d = %f\n", d);
+        double d = b*b - 4*a*c;
         if (d > 0 && d <= eps){
             d = 0;
         }
         if (d == 0) {
             roots[0] = (-b) / (2*a);
+            *num_of_roots = 1;
         } else if(d > 0){
             roots[0] = (-b + sqrt(d)) / (2*a);
             roots[1] = (-b - sqrt(d)) / (2*a);
+            *num_of_roots = 2;
         } else{
-            printf("нет корней\n");
-            return;
+            return NO_ROOTS;
         }
     }
-    
-    print_roots(roots);
 
-    return;
-}
-
-void print_solution(double a, double b, double c, double eps){
-    printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
-    quad_equation(a, b, c, eps);
-    printf("\n");
-
-    return;
-}
-
-void handlerOptQ(double* vals){
-    double eps = vals[0];
-    double a = vals[1];
-    double b = vals[2];
-    double c = vals[3];
-
-    if (a == b && b == c){
-        print_solution(a, b, c, eps);
-        return;
-    }
-    if ((a == b || a == c || b == c)){
-        if (a == b){
-            print_solution(a, a, c, eps);
-            print_solution(a, c, a, eps);
-            print_solution(c, a, a, eps);
-        }
-        if (a == c){
-            print_solution(a, b, a, eps);
-            print_solution(b, a, a, eps);
-            print_solution(a, a, b, eps);
-        }
-        if (b == c){
-            print_solution(a, b, b, eps);
-            print_solution(b, a, b, eps);
-            print_solution(b, b, a, eps);
-        }
-        return;
-    } else{ // if a != b != c
-        print_solution(a, b, c, eps);
-        print_solution(a, c, b, eps);
-        print_solution(b, a, c, eps);
-        print_solution(b, c, a, eps);
-        print_solution(c, a, b, eps);
-        print_solution(c, b, a, eps);
-    }
-    return;
+    return 0;
 }
 
 // -m handler
-void handlerOptM(double* vals){
+int handlerOptM(double* vals){
     int n = (int)vals[0];
     int m = (int)vals[1];
 
-    // printf("%d %d\n", n, m);
+    if(n <= 0 || m <= 0) return NOT_NATURAL;
+
     if (n % m == 0){
-        printf("Число %d кратно %d \n", n, m);
-    } else{
-        printf("Число %d не кратно %d \n", n, m);
-    }
-    return;
+        return 1;
+    } 
+    return 0;
 }
 
 // -t handler
-void hadlerOptT(double* vals){
+int hadlerOptT(double* vals){
     double eps = vals[0];
     double a = vals[1];
     double b = vals[2];
@@ -306,28 +253,27 @@ void hadlerOptT(double* vals){
             cath2 = b;
         }
 
-        double pif = sqrt(pow(cath1, 2) + pow(cath2, 2));
+        double pif = sqrt(cath1*cath1 + pow(cath2, 2));
         if (fabs(hyp - pif) <= eps) {
             is_triangle = 1;
         }
     }
-    if (a <= 0 || b <= 0 || c <= 0) is_triangle = 0;
+    if (a <= 0 || b <= 0 || c <= 0) return NOT_POSITIVE_SIDES;
 
-    if(is_triangle){
-        printf("Числа %f, %f, %f могут являться сторонами прямоугольного треугольника \n", a, b, c);
-    } else{
-        printf("Числа %f, %f, %f не могут являться сторонами прямоугольного треугольника \n", a, b, c);
+    return is_triangle;
+}
+
+void getPermutations(double a, double b, double c, double permutations[6][4]){
+    for (int i = 0; i < 6; i++){
+        for (int j = i + 1; j < 6; j++){
+            if(permutations[i][1] == permutations[j][1] && permutations[i][2] == permutations[j][2]) permutations[j][0] = 0;
+        }
     }
 }
 
 int main(int argc, char** argv){
     kOpts option = 0;
     double args_values[4];
-    void (*handlers[3])(double*) = {
-        handlerOptQ,
-        handlerOptM,
-        hadlerOptT
-    };
     
     errorCodes err_status = getArgs(argc, argv, &option, args_values);
     if(err_status != NORMAL){ // handling errors from cli input
@@ -353,8 +299,78 @@ int main(int argc, char** argv){
             break;
         }
         return 1;
-    } else{
-        handlers[option](args_values);
+    } 
+
+    switch (option){
+    case OPT_Q:
+        double eps = args_values[0];
+        double a = args_values[1];
+        double b = args_values[2];
+        double c = args_values[3];
+
+        double permuts[6][4] = {
+            {1, a, b, c},
+            {1, a, c, b},
+            {1, b, a, c},
+            {1, b, c, a},
+            {1, c, a, b},
+            {1, c, b, a}
+        };
+        getPermutations(a, b, c, permuts);
+        for (int i = 0; i < 6; i++){
+            if(permuts[i][0]){
+                double a = permuts[i][1];
+                double b = permuts[i][2];
+                double c = permuts[i][3];
+                printf("(%f)*x^2 + (%f)*x + (%f)\n", a, b, c);
+                double roots[2];
+                int num_of_roots;
+                switch (quad_equation(a, b, c, eps, &num_of_roots, roots)){
+                case INFINITY_OF_ROOTS:
+                    printf("Бесконечность корней\n");
+                    break;
+                case NO_ROOTS:
+                    printf("Нет корней\n");
+                    break;
+                default:
+                    switch (num_of_roots){
+                    case 1:
+                        printf("корень x = %f;\n", roots[0]);
+                        break;
+                    case 2:
+                        printf("корни x1 = %f, x2 = %f;\n", roots[0], roots[1]);
+                        break;
+                    }
+                    break;
+                }
+                printf("\n");
+            }
+        }
+        break;
+    case OPT_M:
+        int is_div = handlerOptM(args_values);
+        if (is_div == NOT_NATURAL){
+            printf("Passed numbers for flag -m must be natural\n");
+        } else{
+            if(is_div) {
+                printf("Первое число кратно второму \n");
+            } else{
+                printf("Первое число не кратно второму \n");
+            }
+        }
+        break;
+    case OPT_T:
+        int is_triangle = hadlerOptT(args_values);
+        if (is_triangle == NOT_POSITIVE_SIDES){
+            printf("Sides of treangle must be positive values\n");
+        } else{
+            if(is_triangle) {
+                printf("Могут быть сторонами прямоугольного треугольника\n");
+            } else{
+                printf("Не могут быть сторонами прямоугольного треугольника\n");
+            }
+        }
+        break;
     }
     return 0;
 }

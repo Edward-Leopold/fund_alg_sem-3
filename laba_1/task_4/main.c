@@ -85,7 +85,7 @@ errorCodes getArgs(int argc, char** argv, kOpts* flag, FILE** in_file, FILE** ou
         if (strcmp(realpath(argv[2], NULL), realpath(argv[3], NULL)) == 0){
             return UNABLE_TO_OPEN_FILE;
         }
-
+    
         *out_file = fopen(argv[3], "w");
         if (*out_file == NULL){
             return UNABLE_TO_OPEN_FILE;
