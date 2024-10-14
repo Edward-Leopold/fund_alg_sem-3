@@ -34,16 +34,18 @@ errorCodes parse_flag(char* proceeding_string, kOpts* flag){
 }
 
 errorCodes is_same_file(char *a, char *b){
+    errorCodes res = NORMAL;
     char *a_path_pointer = realpath(a, NULL);
     char *b_path_pointer = realpath(b, NULL); 
     if (!a_path_pointer || !b_path_pointer){
-        return UNABLE_TO_OPEN_FILE;
-    }
-    if (strcmp(a_path_pointer, b_path_pointer) == 0){
-        return UNABLE_TO_OPEN_FILE;
+        res = UNABLE_TO_OPEN_FILE;
+    } else if(strcmp(a_path_pointer, b_path_pointer) == 0){
+        res = UNABLE_TO_OPEN_FILE;
     }
 
-    return NORMAL;
+    if (a_path_pointer) free(a_path_pointer);
+    if (b_path_pointer) free(b_path_pointer);
+    return res;
 }
 
 errorCodes getArgs(int argc, char** argv, kOpts *flag, FILE *files[3]){
@@ -100,7 +102,7 @@ errorCodes getArgs(int argc, char** argv, kOpts *flag, FILE *files[3]){
 
 int main(int argc, char** argv){
     kOpts flag;
-    FILE *files[3];
+    FILE *files[3] = {NULL, NULL, NULL};
 
     errorCodes err_status = getArgs(argc, argv, &flag, files);
     if(err_status != NORMAL){ // handling errors from cli input
@@ -129,6 +131,11 @@ int main(int argc, char** argv){
     }
 
 
+    for (int i = 0; i < 3; i++) {
+        if (files[i]) {
+            fclose(files[i]);
+        }
+    }
     return 0;
 }
 
