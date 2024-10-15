@@ -99,10 +99,68 @@ errorCodes getArgs(int argc, char** argv, kOpts *flag, FILE *files[3]){
     return NORMAL;
 }
 
+void next_lexem(int* c, FILE* f){
+    while((*c = fgetc(f)) != EOF){
+        if(!(*c == ' ' || *c == '\t' || *c == '\n')) break;
+    }
+    fseek(f, -1, SEEK_CUR);
+}
+
+int handlerOptR(FILE *files[3]){
+    FILE *in_file1 = files[0];
+    FILE *in_file2 = files[1]; 
+    FILE *out_file = files[2];
+    int ch1 = 1, ch2 = 1;
+    int index_lexem = 1;
+    while (ch1 != EOF && ch2 != EOF){
+        // int ch = (index_lexem % 2 == 1) ? ch1 : ch2;
+        // FILE *in_file = (index_lexem % 2 == 1) ? in_file1 : in_file2;
+        if (index_lexem % 2 == 1){
+            while((ch1 = fgetc(in_file1)) != EOF){
+                if((ch1 == ' ' || ch1 == '\n' || ch1 == 't')) break;
+                if(fputc(ch1, out_file) == EOF) return 1;    
+            }
+            if(fputc(' ', out_file) == EOF) return 1;
+            next_lexem(&ch1, in_file1);
+            index_lexem++;
+        } else{
+            while((ch2 = fgetc(in_file2)) != EOF){
+                if((ch2 == ' ' || ch2 == '\n' || ch2 == 't')) break;
+                if(fputc(ch2, out_file) == EOF) return 1;    
+            }
+            if(fputc(' ', out_file) == EOF) return 1;
+            next_lexem(&ch2, in_file2);
+            index_lexem++;
+        }
+    }
+    
+    int ch = (ch1 != EOF) ? ch1 : ch2;
+    FILE *in_file = (ch1 != EOF) ? in_file1 : in_file2;
+    
+    while((ch = fgetc(in_file)) != EOF){
+        if (ch == ' ' || ch == '\n' || ch == '\t') {
+            next_lexem(&ch, in_file);
+            if(ch == EOF) break;
+            if(fputc(' ', out_file) == EOF) return 1; 
+            continue;    
+        }
+        if(fputc(ch, out_file) == EOF) return 1;
+    }
+    
+    return 0;
+}
+
+int handlerOptA(FILE *files[3]){
+    
+}
 
 int main(int argc, char** argv){
     kOpts flag;
     FILE *files[3] = {NULL, NULL, NULL};
+    int (*handlers[2])(FILE *files[3]) = {
+        handlerOptR,
+        handlerOptA
+    };
 
     errorCodes err_status = getArgs(argc, argv, &flag, files);
     if(err_status != NORMAL){ // handling errors from cli input
@@ -130,6 +188,12 @@ int main(int argc, char** argv){
         return 1;
     }
 
+    printf("opt_key: %d \n", flag);
+    if(handlers[flag](files)) {
+        printf("Error writing to file occured\n");
+    } else{
+        printf("Output file has been successfully changed\n");
+    }
 
     for (int i = 0; i < 3; i++) {
         if (files[i]) {
