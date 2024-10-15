@@ -112,6 +112,10 @@ int handlerOptR(FILE *files[3]){
     FILE *out_file = files[2];
     int ch1 = 1, ch2 = 1;
     int index_lexem = 1;
+    
+    next_lexem(&ch1, in_file1);
+    next_lexem(&ch2, in_file2);
+
     while (ch1 != EOF && ch2 != EOF){
         // int ch = (index_lexem % 2 == 1) ? ch1 : ch2;
         // FILE *in_file = (index_lexem % 2 == 1) ? in_file1 : in_file2;
