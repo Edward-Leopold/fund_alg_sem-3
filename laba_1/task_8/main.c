@@ -4,6 +4,7 @@
 #include<ctype.h>
 #include<math.h>
 #include <limits.h>
+#include <linux/limits.h>
 #include "../err.h"
 
 typedef enum errHandlersCodes{
@@ -16,18 +17,20 @@ typedef enum errHandlersCodes{
 
 errorCodes is_same_file(char *a, char *b){
     errorCodes res = NORMAL;
-    char *a_path_pointer = realpath(a, NULL);
-    char *b_path_pointer = realpath(b, NULL); 
-    if (!a_path_pointer || !b_path_pointer){
-        res = UNABLE_TO_OPEN_FILE;
-    } else if(strcmp(a_path_pointer, b_path_pointer) == 0){
-        res = UNABLE_TO_OPEN_FILE;
-    }
+    char input_path[PATH_MAX];
+    char output_path[PATH_MAX];
+    realpath(a, input_path);
+    realpath(b, output_path);
+    int is_not_same = 0;
+    
+    for (int i = 0; (input_path[i] && output_path[i]); i++) {       
+        if (input_path[i] != output_path[i]) is_not_same = 1;
+    }   
+    if (!is_not_same) res = UNABLE_TO_OPEN_FILE;
 
-    if (a_path_pointer) free(a_path_pointer);
-    if (b_path_pointer) free(b_path_pointer);
     return res;
 }
+
 
 errorCodes getArgs(int argc, char** argv, FILE **in_file, FILE **out_file){
     if(argc < 3) return NOT_ENOUGH_ARGUEMENTS;
@@ -184,12 +187,6 @@ int main(int argc, char* argv[]){
             break;
         case TOO_MANY_ARGUEMENTS:
             printf("%s \n", "Too many argumnets.");
-            break;
-        case UNKNOWN_FLAG:
-            printf("%s \n", "Unknown flag");
-            break;
-        case NOT_A_FLAG:
-            printf("%s \n", "Passed arguement is not a flag. The first arguement must be a flag.");
             break;
         case UNABLE_TO_OPEN_FILE:
             printf("Cannot open file \n");
