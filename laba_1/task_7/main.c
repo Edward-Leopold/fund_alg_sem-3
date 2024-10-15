@@ -2,12 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <ctype.h>
 #include "../err.h"
 
 typedef enum kOpts{
     OPT_R,
     OPT_A
 } kOpts;
+
+typedef enum errHandlersCodes{
+    MALLOC_ERR = 1
+} errHandlersCodes;
 
 errorCodes parse_flag(char* proceeding_string, kOpts* flag){
     if (proceeding_string[0] == '-' || proceeding_string[0] == '/'){
@@ -117,8 +123,6 @@ int handlerOptR(FILE *files[3]){
     next_lexem(&ch2, in_file2);
 
     while (ch1 != EOF && ch2 != EOF){
-        // int ch = (index_lexem % 2 == 1) ? ch1 : ch2;
-        // FILE *in_file = (index_lexem % 2 == 1) ? in_file1 : in_file2;
         if (index_lexem % 2 == 1){
             while((ch1 = fgetc(in_file1)) != EOF){
                 if((ch1 == ' ' || ch1 == '\n' || ch1 == 't')) break;
@@ -154,9 +158,90 @@ int handlerOptR(FILE *files[3]){
     return 0;
 }
 
-int handlerOptA(FILE *files[3]){
-    
+
+
+char* gorner(int n, int base){
+    int length = (int)(log(n)/log(base)) + 1;
+    char* result = (char*)malloc(sizeof(char) * (length + 1));
+    if(result == NULL) return NULL;
+    result[length] = '\0';
+    if(n < base){
+       if(n >= 10) result[0] = (n - 10) + 'a';
+       else result[0] = n + '0';
+    }
+    while(n >= base){
+        int div_remain = n % base;
+        if(div_remain < 10){
+            result[--length] = '0' + div_remain;
+        } else{
+            result[--length] = 'a' + (div_remain - 10);
+        }
+        n /= base;
+        if(n < base){
+            if(n >= 10) result[0] = (n - 10) + 'a';
+            else result[0] = n + '0';
+        }
+    }
+    return result;
 }
+
+int handlerOptA(FILE *files[3]){
+    FILE *in_file = files[0];
+    FILE *output = files[1];
+    int c;
+    int index_lexem = 1;
+    next_lexem(&c, in_file);
+    while (1){
+        c = fgetc(in_file);
+        if(c == EOF) break;
+        if(index_lexem % 10 == 0){
+            while (c != EOF && c != ' ' && c != '\n' && c != '\t') {
+                char* converted = gorner(c, 4);
+                if (converted == NULL) return MALLOC_ERR;
+                fprintf(output, "%s", converted);
+                c = fgetc(in_file);
+            }
+            next_lexem(&c, in_file);
+            index_lexem++;  
+        }
+        else if(index_lexem % 2 == 0 && index_lexem % 10 != 0){
+            while (c != EOF && c != ' ' && c != '\n' && c != '\t') {
+                char tmp = tolower(c);
+                fputc(tmp, output);
+                c = fgetc(in_file);
+            }
+            next_lexem(&c, in_file);
+            index_lexem++;  
+        }
+        else if(index_lexem % 5 == 0 && index_lexem % 10 != 0){
+            while (c != EOF && c != ' ' && c != '\n' && c != '\t') {
+                char* converted = gorner(c, 8);
+                if (converted == NULL) return MALLOC_ERR;
+                fprintf(output, "%s", converted);
+                c = fgetc(in_file);
+            }
+            next_lexem(&c, in_file);
+            index_lexem++;  
+        }
+        else{
+            if(c == ' ' || c=='\t' || c=='\n') next_lexem(&c, in_file);
+            else{
+                while (c != EOF){
+                    if (c == ' ' || c == '\t' || c == '\n') break;
+                    fputc(c, output);
+                    c = fgetc(in_file);
+                }
+                if (c == EOF) break;
+                next_lexem(&c, in_file);
+            }
+            index_lexem++;
+        }
+        if (c == EOF) break;
+        fputc(' ', output);
+    }
+    return 0;
+}
+
 
 int main(int argc, char** argv){
     kOpts flag;
