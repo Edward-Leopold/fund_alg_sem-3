@@ -199,6 +199,7 @@ int handlerOptA(FILE *files[3]){
                 char* converted = gorner(c, 4);
                 if (converted == NULL) return MALLOC_ERR;
                 fprintf(output, "%s", converted);
+                free(converted);
                 c = fgetc(in_file);
             }
             next_lexem(&c, in_file);
@@ -218,6 +219,7 @@ int handlerOptA(FILE *files[3]){
                 char* converted = gorner(c, 8);
                 if (converted == NULL) return MALLOC_ERR;
                 fprintf(output, "%s", converted);
+                free(converted);
                 c = fgetc(in_file);
             }
             next_lexem(&c, in_file);
