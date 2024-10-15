@@ -126,7 +126,7 @@ int handler(FILE *in_file, FILE *out_file){
             int len = 1;
             number[0] = c;
             while (!is_space(c = fgetc(in_file)) && c != EOF) {
-                number = (char*)realloc(number, ++len + 1);  // +1 для '\0'
+                number = (char*)realloc(number, ++len + 1);
                 if (number == NULL) return REALLOC_ERR;
                 number[len - 1] = c;
             }
