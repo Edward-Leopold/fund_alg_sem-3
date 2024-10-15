@@ -62,12 +62,25 @@ int get_base(char* str){
 
 int validate_lexem(char* str){
     int is_negative = (str[0] == '-' && isalnum(str[1])) ? 1 : 0;
-    for(int i = 0 + is_negative; str[i]; ++i){
-        if(!isalnum(str[i])) return 1;
+
+    int start = is_negative;
+
+    while (str[start] == '0' && isalnum(str[start + 1])) {
+        start++;
     }
+
+    int i = is_negative;
+    while (str[start]) {
+        str[i++] = str[start++];
+    }
+    str[i] = '\0';
+
+    for (int i = is_negative; str[i]; ++i){
+        if (!isalnum(str[i])) return 1; 
+    }
+
     return 0;
 }
-
 
 void next_lexem(int* c, FILE* f){
     while((*c = fgetc(f)) != EOF){
