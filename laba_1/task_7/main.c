@@ -14,7 +14,8 @@ typedef enum kOpts{
 } kOpts;
 
 typedef enum errHandlersCodes{
-    MALLOC_ERR = 1
+    WRITE_FILE_ERR = 1,
+    MALLOC_ERR = 2
 } errHandlersCodes;
 
 errorCodes parse_flag(char* proceeding_string, kOpts* flag){
@@ -47,8 +48,9 @@ errorCodes is_same_file(char *a, char *b){
     char output_path[PATH_MAX];
     realpath(a, input_path);
     realpath(b, output_path);
+
     int is_not_same = 0;
-    
+
     for (int i = 0; (input_path[i] && output_path[i]); i++) {       
         if (input_path[i] != output_path[i]) is_not_same = 1;
     }   
@@ -276,11 +278,16 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    printf("opt_key: %d \n", flag);
-    if(handlers[flag](files)) {
+    switch (handlers[flag](files)){
+    case MALLOC_ERR:
+        printf("malloc error\n");
+        break;
+    case WRITE_FILE_ERR:
         printf("Error writing to file occured\n");
-    } else{
+        break;
+    default:
         printf("Output file has been successfully changed\n");
+        break;
     }
 
     for (int i = 0; i < 3; i++) {
