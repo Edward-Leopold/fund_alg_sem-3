@@ -2,7 +2,7 @@
 #include <math.h>
 #include "../err.h"
 
-int parse_double(char* proceeding_number, double* result_number){
+int parseDouble(char* proceeding_number, double* result_number){
     int flag = 0;
     int digits_after_dot = 0;
     int int_num = 0;
@@ -39,7 +39,7 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
         if (argc < 2){
             return NOT_ENOUGH_ARGUEMENTS;
         } else{
-            return TOO_MANY_ARGUEMENTS; // to much arguements
+            return TOO_MANY_ARGUEMENTS;
         }
     }
 
@@ -47,12 +47,15 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
     double int_num = 0;
     int flag = 0;
 
-    if(parse_double(number_option, epsilon)){
+    if(parseDouble(number_option, epsilon)){
         return INVALID_DOUBLE;
     }
     
     if (*epsilon <= 0){
         return INVALID_ARGUEMENT;
+    }
+    if(*epsilon < 0.000000001){
+        return TOO_SMALL_EPSILON;
     }
 
     return NORMAL;
@@ -98,7 +101,7 @@ double lim_sqrt2(double eps){
     while(fabs(x - prev_x) > eps){
         prev_x = x;
         n++;
-        x = prev_x - (pow(prev_x, 2) / 2) + 1;
+        x = prev_x - (prev_x*prev_x / 2) + 1;
     }
     return x;
 }
@@ -153,7 +156,7 @@ double e_equ(double x){
 }
 
 double pi_equ(double x){
-    return tan(x);
+    return cos(x) + 1;
 }
 
 double ln2_equ(double x){
@@ -161,7 +164,7 @@ double ln2_equ(double x){
 }
 
 double sqrt2_equ(double x){
-    return pow(x, 2) - 2;
+    return x*x - 2;
 }
 
 double dichotomy(double (*f)(double), double left, double right, double eps){
@@ -176,6 +179,23 @@ double dichotomy(double (*f)(double), double left, double right, double eps){
     }
     return center;
 }
+
+
+double proizv_pi(double x){
+    return -sin(x);
+}
+
+double newton_method(double (*func)(double), double (*proizv)(double), double x0, double epsilon) {
+    double x = x0;
+    for (int i = 0; ; i++) {
+        double x_new = x - func(x) / proizv(x);
+        if (fabs(x_new - x) < epsilon) {
+            return x_new;
+        }
+        x = x_new;
+    }
+}
+
 
 int main(int argc, char** argv){
     double eps = 0;
@@ -196,6 +216,9 @@ int main(int argc, char** argv){
         case INVALID_ARGUEMENT:
             printf("%s \n", "Invalid value of first arguement. The first arguement must be more than 0.");
             break;
+        case TOO_SMALL_EPSILON:
+            printf("%s \n", "Epsilon must be greater than 0.000000001");
+            break;
         }
         return 1;
     }
@@ -209,7 +232,7 @@ int main(int argc, char** argv){
     printf("Число pi:\n");
     printf("Предел последовательности: %20.20lf \n", limit(pi_lim, eps));
     printf("Сумма ряда: %20.20lf \n", sum(pi_seq, 1, eps));
-    printf("Уравнение: %20.20lf \n", dichotomy(pi_equ, 3.0, 4.0, eps));
+    printf("Уравнение: %20.20lf \n", newton_method(pi_equ, proizv_pi, 3, eps));
     printf("===============================\n");
 
     printf("Число ln2:\n");
