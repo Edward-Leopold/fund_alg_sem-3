@@ -91,7 +91,7 @@ double limit(double (*f)(double), double eps){
         n++;
         val = f(n);
     }
-    return f(n -= 2);
+    return prev_val;
 }
 
 double lim_sqrt2(double eps){
