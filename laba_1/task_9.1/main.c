@@ -39,12 +39,8 @@ errorCodes getArgs(int argc, char** argv, int *a, int *b){
 
     return NORMAL;
 }
-
-int handler(int a, int b, int n){
-    
-}
  
-int main (int argc, char* argv[]){
+int main(int argc, char** argv){
     int a, b;
     
     errorCodes err_status = getArgs(argc, argv, &a, &b);
@@ -57,7 +53,7 @@ int main (int argc, char* argv[]){
             printf("%s \n", "Too many argumnets.");
             break;
         case INVALID_INT:
-            printf("%s \n", "Ivnalid arguement value (must be integer).");
+            printf("%s \n", "Ivnalid arguement integer value (the number must be integer).");
             break;
         case INVALID_ARGUEMENT:
             printf("%s \n", "Ivnalid arguement value, the second number must be greater than first.");
@@ -79,8 +75,7 @@ int main (int argc, char* argv[]){
     int max_pos = 0;
     int min_pos = 0;
 
-    for(int i = 1; i<n; ++i)
-    {
+    for(int i = 1; i < n; ++i){
         if(array[i] < array[min_pos]) min_pos = i;
         else if(array[i] > array[max_pos]) max_pos = i;
     }
@@ -93,9 +88,8 @@ int main (int argc, char* argv[]){
     array[max_pos] = array[min_pos];
     array[min_pos] = temp;
 
-    for(int i = 0; i<n; ++i) printf("%d ", array[i]);
+    for(int i = 0; i < n; ++i) printf("%d ", array[i]);
     printf("\n"); 
-    return 0;
 
     return 0;
 }
