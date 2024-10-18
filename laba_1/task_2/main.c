@@ -13,7 +13,7 @@ int parseDouble(char* proceeding_number, double* result_number){
     for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
         if ((ch >= '0' && ch <= '9') || ch == '.'){
-            if (ch == '.' && flag) return 201;
+            if (ch == '.' && flag) return INVALID_DOUBLE;
             if (ch == '.'){
                 flag = 1;
                 continue;
@@ -24,7 +24,7 @@ int parseDouble(char* proceeding_number, double* result_number){
             int_num *= 10;
             int_num += ch - '0';
         } else {
-            return 1;
+            return INVALID_DOUBLE;
         }
     }
 
@@ -44,8 +44,6 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
     }
 
     char* number_option = argv[1];
-    double int_num = 0;
-    int flag = 0;
 
     if(parseDouble(number_option, epsilon)){
         return INVALID_DOUBLE;
@@ -54,9 +52,9 @@ errorCodes getOpts(int argc, char** argv, double* epsilon){
     if (*epsilon <= 0){
         return INVALID_ARGUEMENT;
     }
-    if(*epsilon < 0.000000001){
-        return TOO_SMALL_EPSILON;
-    }
+    // if(*epsilon < 0.000000001){
+    //     return TOO_SMALL_EPSILON;
+    // }
 
     return NORMAL;
 }
@@ -95,7 +93,7 @@ double limit(double (*f)(double), double eps){
 }
 
 double lim_sqrt2(double eps){
-    double prev_x;
+    double prev_x = +INFINITY;
     double x = -0.5;
     double n = 0;
     while(fabs(x - prev_x) > eps){
@@ -168,7 +166,7 @@ double sqrt2_equ(double x){
 }
 
 double dichotomy(double (*f)(double), double left, double right, double eps){
-    double center;
+    double center = 1;
     while(fabs(right - left) > eps){
         center = (right + left) / 2.0;
         if(f(left) * f(center) > 0){
@@ -218,6 +216,8 @@ int main(int argc, char** argv){
             break;
         case TOO_SMALL_EPSILON:
             printf("%s \n", "Epsilon must be greater than 0.000000001");
+            break;
+        default:
             break;
         }
         return 1;
