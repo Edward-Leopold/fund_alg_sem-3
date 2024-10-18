@@ -13,6 +13,7 @@ typedef enum errHandlersCodes{
     WRITE_TO_FILE_ERR = 3,
     INVALID_SYMBOL = 4,
     TOO_BIG_NUM = 5,
+    GET_BASE_ERR = -1,
 } errHandlersCodes;
 
 errorCodes is_same_file(char *a, char *b){
@@ -61,6 +62,7 @@ int get_base(char* str){
     else if(isalpha(max_char)){
         return (int)max_char - 'a' + 11;
     }
+    return GET_BASE_ERR;
 }
 
 int validate_lexem(char* str){
@@ -109,9 +111,6 @@ int conversion_to_10(const char *number, int base, long long* result) {
         if ('0' <= number[i] && number[i] <= '9') {
             d = number[i] - '0';
         } 
-        else if ('A' <= number[i] && number[i] <= 'Z') {
-            d = number[i] - 'A' + 10; 
-        }
          else if ('a' <= number[i] && number[i] <= 'z') {
             d = number[i] - 'a' + 10; 
         } else {
@@ -139,14 +138,22 @@ int handler(FILE *in_file, FILE *out_file){
         c = fgetc(in_file);
         if(c == EOF) break;
         if(isalnum(c) || c == '-'){
-            char* number = (char*)malloc(sizeof(char) * 1);
+            char* number = (char*)malloc(sizeof(char) * 2);
             if(number == NULL) return MALLOC_ERR;
             int len = 1;
+            int memlen = 2;
             number[0] = tolower(c);
             while (!is_space(c = fgetc(in_file)) && c != EOF) {
-                number = (char*)realloc(number, ++len + 1);
-                if (number == NULL) return REALLOC_ERR;
-                number[len - 1] = tolower(c);
+                if(len + 1 >= memlen){
+                    memlen *= 2;
+                    number = (char*)realloc(number, memlen);
+                    if (number == NULL) {
+                        free(number);
+                        return REALLOC_ERR;
+                    }
+                }
+                number[len] = tolower(c);
+                len++;
             }
             number[len] = '\0';
 
@@ -155,6 +162,10 @@ int handler(FILE *in_file, FILE *out_file){
                 return INVALID_SYMBOL;
             }
             int base = get_base(number);
+            if (base == GET_BASE_ERR) {
+                free(number);
+                return GET_BASE_ERR;
+            }
             long long number_in_10;
             if (conversion_to_10(number, base, &number_in_10) != 0) {
                 free(number);
@@ -196,6 +207,8 @@ int main(int argc, char* argv[]){
         case INVALID_ARGUEMENT:
             printf("Invalid arguement has been passed \n");
             break;
+        default:
+            break;
         }
         return 1;
     }
@@ -215,6 +228,9 @@ int main(int argc, char* argv[]){
         break;
     case TOO_BIG_NUM:
         printf("Too big number in input file\n");
+        break;
+    case GET_BASE_ERR:
+        printf("An error occured while getting base of number\n");
         break;
     default:
         printf("Output file has been successfully changed\n");
