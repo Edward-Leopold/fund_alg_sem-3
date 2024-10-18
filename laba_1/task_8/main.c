@@ -108,9 +108,11 @@ int conversion_to_10(const char *number, int base, long long* result) {
 
         if ('0' <= number[i] && number[i] <= '9') {
             d = number[i] - '0';
-        } else if ('A' <= number[i] && number[i] <= 'Z') {
+        } 
+        else if ('A' <= number[i] && number[i] <= 'Z') {
             d = number[i] - 'A' + 10; 
-        } else if ('a' <= number[i] && number[i] <= 'z') {
+        }
+         else if ('a' <= number[i] && number[i] <= 'z') {
             d = number[i] - 'a' + 10; 
         } else {
             return 1;
@@ -136,15 +138,15 @@ int handler(FILE *in_file, FILE *out_file){
     while (1){
         c = fgetc(in_file);
         if(c == EOF) break;
-        if(isalnum(c)){
+        if(isalnum(c) || c == '-'){
             char* number = (char*)malloc(sizeof(char) * 1);
             if(number == NULL) return MALLOC_ERR;
             int len = 1;
-            number[0] = c;
+            number[0] = tolower(c);
             while (!is_space(c = fgetc(in_file)) && c != EOF) {
                 number = (char*)realloc(number, ++len + 1);
                 if (number == NULL) return REALLOC_ERR;
-                number[len - 1] = c;
+                number[len - 1] = tolower(c);
             }
             number[len] = '\0';
 
