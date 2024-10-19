@@ -55,6 +55,7 @@ int main(int argc, char** argv){
 
     int* arrB = (int*)malloc(sizeof(int) * size2);
     if (arrB == NULL){
+        free(arrA);
         free(arrB);
         printf("malloc error\n");
         return MALL0C_ERR;
