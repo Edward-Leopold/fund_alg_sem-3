@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "../err.h"
 
 typedef enum kOpts{
@@ -10,17 +11,9 @@ typedef enum kOpts{
     OPT_C,
 }kOpts;
 
-// typedef enum errStatus{
-
-// } errStatus;
-
-errorCodes parse_int(char* proceeding_number, int* result_number){
-    int temp = 0;
-    int is_negative = 0;
-    if (proceeding_number[0] == '-'){ // parsing negative int number
-        is_negative = 1;
-    }
-    for (int i = is_negative ? 1 : 0; proceeding_number[i]; i++){
+errorCodes parse_int(char* proceeding_number, unsigned int* result_number){
+    unsigned int temp = 0;
+    for (int i = 0; proceeding_number[i]; i++){
         char ch = proceeding_number[i];
         if (ch >= '0' && ch <= '9'){
             temp *= 10;
@@ -30,7 +23,7 @@ errorCodes parse_int(char* proceeding_number, int* result_number){
         }
     }
 
-    *result_number = is_negative ? -temp : temp;
+    *result_number = temp;
 
     return SUCCESS;
 }
@@ -68,7 +61,7 @@ errorCodes parse_flag(const char* proceeding_string, kOpts* flag){
     return SUCCESS;
 }
 
-errorCodes getArgs(int argc, char **argv, kOpts *flag, int* num, char*** strings){
+errorCodes getArgs(int argc, char **argv, kOpts *flag, unsigned int* num, char*** strings){
     if (argc < 3) return NOT_ENOUGH_ARGUEMENTS;
 
     errorCodes parse_flag_status = parse_flag(argv[1], flag);
@@ -120,6 +113,63 @@ int handlerFlagR(const char* str, char** reversed){
     return 0; 
 }
 
+int handlerFlagU(const char* str, char** uppercased){
+    for (int i = 0; str[i]; i++) (*uppercased)[i] = (i % 2 == 0) ? str[i] : toupper(str[i]); 
+    return 0; 
+}
+
+int handlerFlagN(const char* str, char** modified){
+    int len = my_len(str);
+    int numbers = 0, letters = 0, others = 0; 
+    for (int i = 0; i < len; i++){
+        char ch = str[i];
+        if (ch >= '0' && ch <= '9') (*modified)[numbers++] = ch;
+    }
+    letters += numbers;
+    for (int i = 0; i < len; i++){
+        char ch = str[i];
+        if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) (*modified)[letters++] = ch;
+    }
+    others += letters;
+    for (int i = 0; i < len; i++){
+        char ch = str[i];
+        if (!isalnum(ch)) (*modified)[others++] = ch;
+    }
+    (*modified)[len] = '\0';
+    return 0; 
+}
+
+int handlerOptC(char** strings, int num, char **concat){
+    srand(num);
+    int totallen = 0;
+    int stringsCount = 0;
+    for (int i = 0; strings[i]; i++) {
+        totallen += my_len(strings[i]);
+        stringsCount += 1;
+    }
+
+    for (int i = stringsCount - 1; i > 0; i--) {
+		int j = rand() % (i + 1);
+		char* temp = strings[i];
+		strings[i] = strings[j];
+		strings[j] = temp;
+	}
+
+    char *out = malloc((totallen + 1) * sizeof(char));
+    if(out == NULL) return MALLOC_ERR;
+    out[totallen] = '\0';
+
+    int ptr = 0;
+	for (int i = 0; strings[i]; i++) {
+		for (int j = 0; strings[i][j]; j++) {
+			out[ptr++] = strings[i][j];
+		}
+	}
+
+    *concat = out;
+    return SUCCESS;
+}
+
 int main(int argc, char** argv){
     kOpts flag;
     unsigned int num;
@@ -150,7 +200,6 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    // for (int i = 0; strings[i]; i++) printf("%s\n", strings[i]);
     switch (flag){
     case OPT_L:
         int len = 0;
@@ -158,19 +207,37 @@ int main(int argc, char** argv){
         printf("Length of string: %d\n", len);
         break;
     case OPT_R:
-        char* reversed = (char*)malloc(sizeof(char*) * (my_len(strings[0]) + 1));
+        char* reversed = (char*)malloc(sizeof(char) * (my_len(strings[0]) + 1));
         handlerFlagR(strings[0], &reversed);
         printf("Reversed string: %s\n", reversed);
         free(reversed);
         break;
-    case OPT_C:
-        
+    case OPT_U:
+        char* uppercased = (char*)malloc(sizeof(char) * (my_len(strings[0]) + 1));
+        handlerFlagU(strings[0], &uppercased);
+        printf("With uppercased letters string: %s\n", uppercased);
+        free(uppercased);
         break;
-    
+    case OPT_N:
+        char* modified = (char*)malloc(sizeof(char) * (my_len(strings[0]) + 1));
+        handlerFlagN(strings[0], &modified);
+        printf("Modified string: %s\n", modified);
+        free(modified);
+        break;
+    case OPT_C:
+            char *concat;
+            errorCodes status = handlerOptC(strings, num, &concat);
+            if (status != SUCCESS) {
+                printf("Error during concatenation\n");
+                return 1;
+            }
+            printf("Concatenated string: %s\n", concat);
+            free(concat);
+            break;
+        break;
     default:
         break;
     }
-
     free(strings);
     return 0;
 }
