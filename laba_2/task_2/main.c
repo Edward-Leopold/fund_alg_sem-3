@@ -36,6 +36,31 @@ errCodes geom_mean(double *res, int count, ...){
     return SUCCESS;
 }
 
+double my_pow(errCodes *status, double base, int pow){
+    if (*status != SUCCESS) return 0;
+
+    if (pow == 0) return 1;
+    if (pow < 0) return my_pow(status, 1 / base, -pow);
+
+    if (pow % 2 == 0) {
+        double res = my_pow(status, base * base, pow / 2);
+        if (!isfinite(res)) {
+            *status = OVERFLOW;
+            return 0;
+        }
+
+        return res; // x^n = (x^2)^(n/2) = (x^(n/2)) * (x^(n/2))
+    } 
+    else {
+        double res = base * my_pow(status, base * base, (pow - 1) / 2);
+        if (!isfinite(res)) {
+            *status = OVERFLOW;
+            return 0;
+        }
+
+        return res;
+    }
+}
 
 
 int main(int argc, char** argv){
@@ -47,7 +72,7 @@ int main(int argc, char** argv){
             printf("Passed arguements for geometric mean can't be negative numbers \n");
             break;
         case OVERFLOW:
-            printf("Overflow occured! \n");
+            printf("Overflow occured for geometric mean! \n");
             break;
         default:
             break;
@@ -56,6 +81,20 @@ int main(int argc, char** argv){
     }
     printf("%lf\n", DBL_MAX);
     printf("Geometric mean: %lf\n", res1);
+
+    errCodes status2 = SUCCESS;
+    double res2 = my_pow(&status2, 2, 200);
+    if(status2 != SUCCESS){
+        switch (status2){
+        case OVERFLOW:
+            printf("Overflow occured for power operation! \n");
+            break;
+        default:
+            break;
+        }
+        return 1;
+    }
+    printf("power: %lf\n", res2);
 
     return 0;
 }
