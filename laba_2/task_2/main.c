@@ -65,7 +65,7 @@ double my_pow(errCodes *status, double base, int pow){
 
 int main(int argc, char** argv){
     double res1;
-    errCodes status1 = geom_mean(&res1, 4, 4.5, 5.6, 7.0, 8.987);
+    errCodes status1 = geom_mean(&res1, 4, 0, 5.6, 7.0, 8.987);
     if(status1 != SUCCESS){
         switch (status1){
         case NEGATIVE_SQRT:
@@ -79,7 +79,6 @@ int main(int argc, char** argv){
         }
         return 1;
     }
-    printf("%lf\n", DBL_MAX);
     printf("Geometric mean: %lf\n", res1);
 
     errCodes status2 = SUCCESS;
