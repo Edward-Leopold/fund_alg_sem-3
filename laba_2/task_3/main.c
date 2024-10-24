@@ -51,39 +51,41 @@ errCodes find_str(FILE* file, const char* str, char*** out_strings){
     if (!out_msg) return MALLOC_ERR;
     int count = 0;
 
-    int str_len = 1000;
-    char s[str_len];
-    if (str_len < get_len(str)) return SUBSTR_SIZE_ERR;
+    fseek(file, 0, SEEK_END);
+    long int file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    char *buffer = malloc(file_size + sizeof(char));
+    if(!buffer) return MALLOC_ERR;
+
+    fread(buffer, 1, file_size, file);
+    buffer[file_size] = '\0';
 
     int line_index = 1;
-    int chars_in_line = 0;
-    while(fgets(s, str_len, file)){
-        for(int i = 0; s[i]; i++) {
-            chars_in_line++;
-            if (s[i] == '\n') {
-                line_index++;
-                chars_in_line = 0;
-            }
-        }
+    int chars_in_line = 1;
+    int str_len = get_len(str);
+
+    for(int i = 0; i < file_size - str_len; i++){
+         
         
-        int len_substr = get_len(str);
-        int len_str = get_len(s);
-        for(int i = 0; i < len_str - len_substr; i++){
-            if (compare_strings(&s[i], str)) {
-                char msg[200];
-                sprintf(msg, "строка: %d, cимвол: %d", line_index, i + 1);
-                if(mem_size < count + 1) {
-                    mem_size *= 2;
-                    out_msg = realloc(out_msg, sizeof(char*) * (mem_size + 1));
-                    if(!out_msg) return REALLOC_ERR;
-                }
-                out_msg[count] = msg;
-                count++; 
-            } 
+        if(compare_strings(&buffer[i], str)){
+            char* msg = malloc(sizeof(char) * 200);
+            if (!msg) return MALLOC_ERR;
+            sprintf(msg, "строка: %d, cимвол: %d", line_index, chars_in_line);
+            if(mem_size < count + 1) {
+                mem_size *= 2;
+                out_msg = realloc(out_msg, sizeof(char*) * (mem_size + 1));
+                if(!out_msg) return REALLOC_ERR;
+            }
+            out_msg[count] = msg;
+            count++; 
         }
-    }   
-    out_msg[count] = NULL; 
-    printf("%d\n", line_index);
+
+        if (buffer[i] == '\n') {
+            line_index++;
+            chars_in_line = 1;
+        } else chars_in_line++;
+    }
 
     for (int i = 0; out_msg[i]; i++) printf("%s\n", out_msg[i]);
 
@@ -110,7 +112,7 @@ errCodes find_str_in_files(const char* str, char*** result, const int n, ...){
 
 int main(int argc, char** argv){
     char **result;
-    errCodes status = find_str_in_files("nulla", &result, 1, "in1.txt");
+    errCodes status = find_str_in_files("mi \naugue", &result, 1, "in1.txt");
 
     return 0;
 }
