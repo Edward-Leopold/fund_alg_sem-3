@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -20,7 +24,8 @@ int get_len(const char* arr){
     return temp;
 }
 
-int to_int(const char ch){
+int to_int(const char c){
+    char ch = tolower(c);
     if (ch >= '0' && ch <= '9') return ch - '0';
     if (ch >= 'a' && ch <= 'z') return ch - 'a' + 10;
     return -1;
@@ -37,6 +42,25 @@ int reverse(const char* str, char** reversed){
     for (int i = 0; i < len; i++) (*reversed)[i] = str[len - i - 1];
     (*reversed)[len] = '\0';
     return 0; 
+}
+
+char* remove_zeros(const char* str) {
+    while (*str == '0') str++;
+    
+    if (*str == '\0') {
+        char* zero_str = malloc(2 * sizeof(char));
+        if (!zero_str) return NULL;
+        zero_str[0] = '0';
+        zero_str[1] = '\0';
+        return zero_str;
+    }
+
+    int new_len = get_len(str);
+    char* result = malloc((new_len + 1) * sizeof(char));
+    if (!result) return NULL;
+    strcpy(result, str);
+
+    return result;
 }
 
 errCodes sum(const int base, const char* a, const char* b, char** result){
@@ -136,7 +160,15 @@ errCodes sum_all(char** result, const int base, const int count, ...){
     va_start(nums, count);
     for (int i = 0; i < count; i++){
         char* num = va_arg(nums, char*);
-        errCodes err_status = sum(base, output, num, &output);
+
+        char* trimmed_num = remove_zeros(num);
+        if (!trimmed_num){
+            va_end(nums);
+            free(output);
+            return MALLOC_ERR;
+        }
+
+        errCodes err_status = sum(base, output, trimmed_num, &output);
         if (err_status != SUCCESS) {
             va_end(nums);
             free(output);
@@ -153,7 +185,7 @@ errCodes sum_all(char** result, const int base, const int count, ...){
 int main(int argc, char** argv){
 
     char *res;
-    errCodes status = sum_all(&res, 6, 3, "10", "231", "345");
+    errCodes status = sum_all(&res, 11, 3, "10", "90000000231", "99999aA99345");
     if (status != SUCCESS){
         switch (status){
         case MALLOC_ERR:
