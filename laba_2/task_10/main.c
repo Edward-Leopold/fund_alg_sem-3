@@ -38,12 +38,12 @@ double fast_pow(double base, int exp) {
 }
 
 errCodes recomposition(double epsilon, double a, double** result_coeffs, int degree, ...) {
-    *result_coeffs = (double*)malloc(sizeof(double) * (degree + 1));
+    *result_coeffs = malloc(sizeof(double) * (degree + 1));
     if (*result_coeffs == NULL) {
         return MALLOC_ERR;
     }
 
-    double* initial_poly = (double*)malloc(sizeof(double) * (degree + 1));
+    double* initial_poly = malloc(sizeof(double) * (degree + 1));
     if (!initial_poly) {
         free(*result_coeffs);
         return MALLOC_ERR;
@@ -56,7 +56,7 @@ errCodes recomposition(double epsilon, double a, double** result_coeffs, int deg
     }
     va_end(args);
 
-    double* binom_coeffs = (double*)malloc(sizeof(double) * (degree + 1));
+    double* binom_coeffs = malloc(sizeof(double) * (degree + 1));
     if (!binom_coeffs) {
         free(initial_poly);
         free(*result_coeffs);
@@ -76,6 +76,8 @@ errCodes recomposition(double epsilon, double a, double** result_coeffs, int deg
         }
     }
 
+    free(initial_poly);
+    free(binom_coeffs);
 
     return SUCCESS;
 }
