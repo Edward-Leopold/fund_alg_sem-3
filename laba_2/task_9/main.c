@@ -122,6 +122,8 @@ errs convert(double** answer, int base, int count, ...){
             return denom_status;
         } 
 
+        // printf("%d / %d\n", numerator, denominator);
+
         int is_subset = 1;
         for (int i = 0; denom_factors[i] > 0; i++){
             int is_found = 0;
