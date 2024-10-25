@@ -8,6 +8,7 @@ typedef enum errCodes{
     UNABLE_OPEN_FILE,
     MALLOC_ERR,
     REALLOC_ERR,
+    SUBSTR_ERR,
 
     SUCCESS
 }errCodes;
@@ -116,6 +117,8 @@ errCodes find_str(const char* file_name, const char* str, char*** out_strings){
 }
 
 errCodes find_str_in_files(const char* str, char*** result, const int n, ...){
+    if (get_len(str) <= 0) return SUBSTR_ERR;
+
     int mem_size = 10;
     int count = 0;
     char **out_msg = malloc(sizeof(char*) * (mem_size + 1));
@@ -153,8 +156,6 @@ errCodes find_str_in_files(const char* str, char*** result, const int n, ...){
     va_end(list);
     out_msg[count] = NULL;
 
-    // for (int i = 0; out_msg[i]; i++) printf("%s\n", out_msg[i]);
-
     *result = out_msg;
 
     return SUCCESS;
@@ -173,6 +174,9 @@ int main(int argc, char** argv){
             break;
         case UNABLE_OPEN_FILE:
             printf("Cannot open file!\n");
+            break;
+        case SUBSTR_ERR:
+            printf("The substring must not be empty!\n");
             break;
         default:
             break;
