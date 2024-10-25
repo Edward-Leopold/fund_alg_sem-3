@@ -22,8 +22,12 @@ errs prime_factors(int n, int** out_list){
     for (int i = 2; i <= n; i++){
         if (count + 1 >= malloc_size){ 
             malloc_size *= 2;
-            list = realloc(list, sizeof(int) * (malloc_size + 1));
-            if (list == NULL) return REALLOC_ERR;
+            int* temp = realloc(list, sizeof(int) * (malloc_size + 1));
+            if (temp == NULL) {
+                free(list);
+                return REALLOC_ERR;
+            }
+            list = temp;
         }
         if(n % i == 0) list[count++] = i;
         while(n % i == 0){
@@ -87,22 +91,36 @@ errs convert(double** answer, int base, int count, ...){
     va_start(nums, count);
     for(int i = 0; i < count; i++){
         double n = va_arg(nums, double);
-        if (n >= 1 || n <= 0) return RANGE_ERR;
-        if (base > 36 || base < 2) return BASE_ERR;
+        if (n >= 1 || n <= 0) {
+            va_end(nums);
+            return RANGE_ERR;
+        }
+        if (base > 36 || base < 2){
+            va_end(nums);
+            return BASE_ERR;
+        } 
         
-
         int numerator;
         int denominator; // numerator / denominator
 
         errs frac_status = get_fraction(n, &numerator, &denominator);
-        if (frac_status != SUCCESS) return frac_status;
+        if (frac_status != SUCCESS) {
+            va_end(nums);
+            return frac_status;
+        }
         
         int* base_factors;
         int* denom_factors;
         errs base_status = prime_factors(base, &base_factors);
         errs denom_status = prime_factors(denominator, &denom_factors);
-        if (base_status != SUCCESS) return base_status;
-        if (denom_status != SUCCESS) return denom_status;
+        if (base_status != SUCCESS) {
+            va_end(nums);
+            return base_status;
+        }
+        if (denom_status != SUCCESS){
+            va_end(nums);
+            return denom_status;
+        } 
 
         int is_subset = 1;
         for (int i = 0; denom_factors[i] > 0; i++){
@@ -132,8 +150,8 @@ errs convert(double** answer, int base, int count, ...){
 }
 
 int main(){
-    double* answer;
-    errs status = convert(&answer, 2, 7, 0.125, 0.88, 0.34593, 0.99999999, 0.81731, 0.0008, 0.0000000000000000001);
+    double* answer; 
+    errs status = convert(&answer, 16, 7, 0.125, 0.88, 0.34593, 0.99999999, 0.81731, 0.0008, 0.0000000000000000001);
     if (status != SUCCESS){
         switch (status){
         case MALLOC_ERR:
@@ -162,7 +180,7 @@ int main(){
         if(num > 0) printf("Число %.8lf имеет конечное представление\n", fabs(num));
         else printf("Число %.8lf не имеет конечного представления\n", fabs(num));
     }
-
+    free(answer);
     
     return 0;
 }
