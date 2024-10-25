@@ -168,7 +168,10 @@ errCodes sum_all(char** result, const int base, const int count, ...){
             return MALLOC_ERR;
         }
 
-        errCodes err_status = sum(base, output, trimmed_num, &output);
+        char* temp_output = output;
+        errCodes err_status = sum(base, temp_output, trimmed_num, &output);
+        free(temp_output);
+        free(trimmed_num);
         if (err_status != SUCCESS) {
             va_end(nums);
             free(output);
