@@ -28,10 +28,13 @@ unsigned int increment(unsigned int num) {
 }
 
 keyErrs convert_base2r( int num, unsigned int r, char **result){
-    if (num < 0) return NUM_ERR;
+    if (num < 0) {
+        return NUM_ERR;
+    }
     else if (num == 0) {
         *result = malloc(sizeof(char) << 1);
         if (*result == NULL) return MALLOC_ERR;
+
         (*result)[0] = '0';
         (*result)[1] = '\0';
         return SUCCESS;
@@ -74,7 +77,7 @@ keyErrs convert_base2r( int num, unsigned int r, char **result){
 
 int main(){
     char *res; 
-    keyErrs status = convert_base2r(87, 3, &res);
+    keyErrs status = convert_base2r(154679, 2, &res);
     if (status != SUCCESS){
         switch (status){
         case MALLOC_ERR:
