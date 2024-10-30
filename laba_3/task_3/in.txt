@@ -1,11 +1,11 @@
 1 Thomas Jefferson 100000.90
-2 John Doe 109230.909
-4 Matthew Jackson 9999.90
-5643 Andrew Mills 21313
+        2 John Doe 109230.909
+                                                                                                                    4 Matthew Jackson 9999.90
+                   5643 Andrew Mills 21313
 198 Michel Jefferson 1000.90
 98101 George Kovalsky 23984.99
 2901 Max Madson 92307.15
 134 Genry Ford 10000009123.90
 891 Nickolas Cage 10023274.1
-212 Taylor Swift 2894.90
-221 Kenny Smith 21.90               
+  212 Taylor Swift 2894.90
+        221 Kenny Smith 21.90               

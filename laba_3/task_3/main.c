@@ -81,34 +81,82 @@ void next_lexem(int* c, FILE* f){
     fseek(f, -1, SEEK_CUR);
 }
 
-int is_space(char c){
-
-}
-
-errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Employee** result){
+errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Employee*** result){
     FILE* in = fopen(in_file, "r");
-    if (in == NULL) return UNABLE_TO_OPEN_FILE;
     FILE* out = fopen(out_file, "w");
-    if (out == NULL) return UNABLE_TO_OPEN_FILE;
+    if(!in || !out){
+        if (in) fclose(in);
+        if (out) fclose(out);
+        return UNABLE_TO_OPEN_FILE;
+    }
 
     int emp_count = 0;
     int mem_size = 10;
-    Employee* list = malloc(sizeof(Employee) * (mem_size + 1));
+    Employee** list = malloc(sizeof(Employee*) * (mem_size + 1));
 
-    char* str;
-    while ((str = fgets(str, 10000, in)) != NULL){
-        Employee emp;
-        int status = sscanf(str, "%d %s %s %lf", &emp.id, &emp.name, &emp.surname, &emp.salary); // добавить проверку status = 0
+    const int size_of_line = 10000;
+    char str[size_of_line];
+    while ((fgets(str, size_of_line, in)) != NULL){
         if(emp_count == mem_size){
             mem_size *= 2;
-            Employee *temp = list;
-            list = realloc(temp, sizeof(Employee) * (mem_size + 1));
-            if(list == NULL){
-                
+            Employee **temp = (Employee**)realloc(list, sizeof(Employee*) * (mem_size + 1));
+            if(temp == NULL){
+                for (int i = 0; i < emp_count; i++) {
+                    free(list[i]->name);
+                    free(list[i]->surname);
+                    free(list[i]);
+                }
+                free(list);
+                fclose(in);
+                fclose(out);
+                return REALLOC_ERR;
             }
+            list = temp;
         }
+
+        Employee* emp = malloc(sizeof(Employee));
+        if(!emp){
+            for (int i = 0; i < emp_count; i++) {
+                free(list[i]->name);
+                free(list[i]->surname);
+                free(list[i]);
+            }
+            free(list);
+            fclose(in);
+            fclose(out);
+            return MALLOC_ERR;
+        }
+
+        emp->name = malloc(sizeof(char) * (100 + 1));
+        emp->surname = malloc(sizeof(char) * (100 + 1));
+        if(!emp->name || !emp->surname){
+            if (emp->name) free(emp->name);
+            if (emp->surname) free(emp->surname);
+            for (int i = 0; i < emp_count; i++) {
+                free(list[i]->name);
+                free(list[i]->surname);
+                free(list[i]);
+            }
+            free(list);
+            fclose(in);
+            fclose(out);
+            return MALLOC_ERR;
+        }
+
+        int scan_status = sscanf(str, "%d %100s %100s %lf", &(emp->id), emp->name, emp->surname, &(emp->salary)); // добавить проверку status = 0
+        if (scan_status != 4){
+            free(emp->name);
+            free(emp->surname);
+            free(emp);
+            continue;
+        }
+
+        list[emp_count] = emp;
+        emp_count++;
     }
+    list[emp_count] = NULL;
     
+    *result = list;
 
     fclose(in);
     fclose(out);
@@ -144,8 +192,10 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    Employee* res;
+    Employee** res;
     sort(in_file, out_file, flag, &res);
 
+    for(int i = 0; res[i]; i++) printf("%d %s %s %lf\n", res[i]->id, res[i]->name, res[i]->surname, res[i]->salary);
+    
     return 0;
 }
