@@ -1,0 +1,43 @@
+Tree for string 1:
+A
+  B
+    E
+      G
+      T
+      R
+        W
+        Z
+    F
+      L
+      M
+  C
+
+Tree for string 2:
+A
+  B
+    E
+      G
+      T
+      R
+        W
+        U
+    C
+
+Tree for string 3:
+B
+  A
+
+Tree for string 4:
+A
+  B
+    E
+      G
+      T
+      R
+        W
+        Z
+    F
+      L
+      M
+  C
+
