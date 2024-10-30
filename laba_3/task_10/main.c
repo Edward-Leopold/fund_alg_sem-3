@@ -326,13 +326,13 @@ errCodes make_trees(const char* out_file, char** strings){
     if (!output) return UNABLE_TO_OPEN_FILE;
 
     for (int i = 0; strings[i]; i++) {
-        fprintf(output, "Tree for string %d:\n", i + 1);
         TreeNode *root = build_tree(strings[i]);
         if (root == NULL) {
             fclose(output);
             return MALLOC_ERR;
         }
 
+        fprintf(output, "Tree for string %d:\n", i + 1);
         print_tree(output, root, 0);
         fprintf(output, "\n");
 
@@ -400,12 +400,15 @@ int main(int argc, char** argv){
         default:
             break;
         }
+        for (int i = 0; strings[i]; i++) {
+            free(strings[i]);
+        }
+        free(strings);
         return 1;
     }
 
     for (int i = 0; strings[i]; i++) {
-        printf("Processed string %d: %s %ld\n", i + 1, strings[i], strlen(strings[i]));
-        free(strings[i]); // освобождение памяти для каждой строки
+        free(strings[i]);
     }
     free(strings);
     return 0;
