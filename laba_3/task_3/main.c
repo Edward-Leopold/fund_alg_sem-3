@@ -81,12 +81,10 @@ void next_lexem(int* c, FILE* f){
     fseek(f, -1, SEEK_CUR);
 }
 
-errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Employee*** result){
+errorCodes get_arr(const char* in_file, Employee*** result){
     FILE* in = fopen(in_file, "r");
-    FILE* out = fopen(out_file, "w");
-    if(!in || !out){
+    if(!in){
         if (in) fclose(in);
-        if (out) fclose(out);
         return UNABLE_TO_OPEN_FILE;
     }
 
@@ -108,7 +106,6 @@ errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Emp
                 }
                 free(list);
                 fclose(in);
-                fclose(out);
                 return REALLOC_ERR;
             }
             list = temp;
@@ -123,7 +120,6 @@ errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Emp
             }
             free(list);
             fclose(in);
-            fclose(out);
             return MALLOC_ERR;
         }
 
@@ -139,7 +135,6 @@ errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Emp
             }
             free(list);
             fclose(in);
-            fclose(out);
             return MALLOC_ERR;
         }
 
@@ -159,6 +154,60 @@ errorCodes sort(const char* in_file, const char* out_file, const kOpts flag, Emp
     *result = list;
 
     fclose(in);
+
+    return SUCCESS;
+}
+
+int len_arr(Employee** arr){
+    int len = 0;
+    for(;arr[len]; len++);
+    return len;
+}
+
+int comparator_a(const void *a, const void *b) {
+    const Employee *emp1 = *(const Employee **)a; 
+    const Employee *emp2 = *(const Employee **)b;
+
+    if (emp1->salary > emp2->salary) return 1;
+    else if (emp1->salary < emp2->salary) return -1;
+
+    int surname_cmp = strcmp(emp1->surname, emp2->surname);
+    if (surname_cmp != 0) return surname_cmp;
+
+    int name_cmp = strcmp(emp1->name, emp2->name);
+    if (name_cmp != 0) return name_cmp;
+
+    return emp1->id - emp2->id;
+}
+
+int comparator_d(const void *a, const void *b) {
+    const Employee *emp1 = *(const Employee **)a;
+    const Employee *emp2 = *(const Employee **)b;
+
+    if (emp1->salary > emp2->salary) return -1;
+    else if (emp1->salary < emp2->salary) return 1;
+
+    int surname_cmp = strcmp(emp2->surname, emp1->surname);
+    if (surname_cmp != 0) return surname_cmp;
+
+    int name_cmp = strcmp(emp2->name, emp1->name); 
+    if (name_cmp != 0) return name_cmp;
+
+    return emp2->id - emp1->id;
+}
+
+errorCodes write_arr(const char* out_file, Employee** list){
+    FILE* out = fopen(out_file, "w");
+    if(!out) return UNABLE_TO_OPEN_FILE;
+
+    for (int i = 0; list[i]; i++) {
+        int print_status = fprintf(out, "%d %s %s %lf\n", list[i]->id, list[i]->name, list[i]->surname, list[i]->salary);
+        if(print_status < 0) {
+            fclose(out);
+            return WRITE_TO_FILE_ERR;
+        }
+    }
+
     fclose(out);
     return SUCCESS;
 }
@@ -193,9 +242,62 @@ int main(int argc, char** argv){
     }
 
     Employee** res;
-    sort(in_file, out_file, flag, &res);
 
-    for(int i = 0; res[i]; i++) printf("%d %s %s %lf\n", res[i]->id, res[i]->name, res[i]->surname, res[i]->salary);
+    errorCodes get_status = get_arr(in_file, &res);
+    if(get_status != SUCCESS){ // handling errors from cli input
+        switch (get_status){
+        case MALLOC_ERR:
+            printf("Malloc error!\n");
+            break;
+        case REALLOC_ERR:
+            printf("Realloc error!\n");
+            break;
+        case UNABLE_TO_OPEN_FILE:
+            printf("Cannot open file!\n");
+            break;
+        default:
+            break;
+        }
+        return 1;
+    }
+
+    switch (flag){
+    case OPT_A:
+        qsort(res, len_arr(res), sizeof(Employee*), comparator_a);
+        break;
+    case OPT_D:
+        qsort(res, len_arr(res), sizeof(Employee*), comparator_d);
+        break;
+    default:
+        break;
+    }
+
+    errorCodes write_status =  write_arr(out_file, res);
+    if(write_status != SUCCESS){ // handling errors from cli input
+        switch (write_status){
+        case UNABLE_TO_OPEN_FILE:
+            printf("Cannot open file!\n");
+            break;
+        default:
+            break;
+        }
+        for (int i = 0; res[i]; i++) {
+            free(res[i]->name);
+            free(res[i]->surname);
+            free(res[i]);
+        }
+        free(res);
+        return 1;
+    }
+
+    printf("Output file was succesfully changed\n");
+
+    for (int i = 0; res[i]; i++) {
+        free(res[i]->name);
+        free(res[i]->surname);
+        free(res[i]);
+    }
+    free(res);
     
     return 0;
 }
