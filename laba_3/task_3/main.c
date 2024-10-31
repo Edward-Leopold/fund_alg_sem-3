@@ -5,6 +5,7 @@
 #include<math.h>
 #include <limits.h>
 #include <linux/limits.h>
+#include <float.h>
 #include "err.h"
 
 typedef enum kOpts{
@@ -138,8 +139,15 @@ errorCodes get_arr(const char* in_file, Employee*** result){
             return MALLOC_ERR;
         }
 
-        int scan_status = sscanf(str, "%d %100s %100s %lf", &(emp->id), emp->name, emp->surname, &(emp->salary)); // добавить проверку status = 0
+        int scan_status = sscanf(str, "%d %100s %100s %lf", &(emp->id), emp->name, emp->surname, &(emp->salary));
         if (scan_status != 4){
+            free(emp->name);
+            free(emp->surname);
+            free(emp);
+            continue;
+        }
+
+        if (emp->id < 0 || !isfinite(emp->salary)){
             free(emp->name);
             free(emp->surname);
             free(emp);
@@ -244,7 +252,7 @@ int main(int argc, char** argv){
     Employee** res;
 
     errorCodes get_status = get_arr(in_file, &res);
-    if(get_status != SUCCESS){ // handling errors from cli input
+    if(get_status != SUCCESS){ 
         switch (get_status){
         case MALLOC_ERR:
             printf("Malloc error!\n");
@@ -273,7 +281,7 @@ int main(int argc, char** argv){
     }
 
     errorCodes write_status =  write_arr(out_file, res);
-    if(write_status != SUCCESS){ // handling errors from cli input
+    if(write_status != SUCCESS){
         switch (write_status){
         case UNABLE_TO_OPEN_FILE:
             printf("Cannot open file!\n");
