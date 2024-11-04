@@ -18,13 +18,17 @@ String* create_string(char* str){
 }
 
 void clear_string(String* string){
-    free(string->text);
-    string->len = 0;
+    if (string){
+        free(string->text);
+        string->len = 0;
+    }
 }
 
 void delete_string(String* string){
-    clear_string(string);
-    free(string);
+    if (string){
+        clear_string(string);
+        free(string);
+    }
 }
 
 int compare_strings(const String* s1, const String* s2){
