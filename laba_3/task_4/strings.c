@@ -98,10 +98,9 @@ int concat_strings(String* s1, const String* s2){
 
 int main(){
     String* s1 = create_string("Hello, World! ");
-    String* s2 = create_string("My ow");
+    String* s2 = create_string("My own summer");
     printf("%s %d\n", s1->text, s1->len);
     printf("%s %d\n", s2->text, s2->len);
-    // copy_stings(s1, s2);
     printf("\n");
 
     concat_strings(s1, s2);
