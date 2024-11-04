@@ -11,6 +11,7 @@ typedef struct String{
 
 String* create_string(char* str);
 void clear_string(String* string);
+void delete_string(String* string);
 
 int compare_strings(const String* s1, const String* s2);
 int equals_strings(const String* s1, const String* s2);

@@ -22,6 +22,11 @@ void clear_string(String* string){
     string->len = 0;
 }
 
+void delete_string(String* string){
+    clear_string(string);
+    free(string);
+}
+
 int compare_strings(const String* s1, const String* s2){
     if(s1->len < s2->len) return 1;
     else if(s1->len > s2->len) return -1;

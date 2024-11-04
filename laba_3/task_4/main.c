@@ -5,8 +5,7 @@
 int main(){
     String *s = create_string("Hello, world!");
     printf("%s\n", s->text);
-    clear_string(s);
-    free(s);
+    delete_string(s);
 
     return 0;
 }
