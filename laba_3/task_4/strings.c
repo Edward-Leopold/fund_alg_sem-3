@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
-typedef struct String{
-    char *text;
-    int len;
-}String;
+#include "strings.h"
 
 String* create_string(char* str){
     String* string = malloc(sizeof(String));
@@ -94,22 +87,4 @@ int concat_strings(String* s1, const String* s2){
 
     return 1;
 
-}
-
-int main(){
-    String* s1 = create_string("Hello, World! ");
-    String* s2 = create_string("My own summer");
-    printf("%s %d\n", s1->text, s1->len);
-    printf("%s %d\n", s2->text, s2->len);
-    printf("\n");
-
-    concat_strings(s1, s2);
-    printf("%s %d\n", s1->text, s1->len);
-    
-    clear_string(s1);
-    free(s1);
-    clear_string(s2);
-    free(s2);
-
-    return 0;
 }

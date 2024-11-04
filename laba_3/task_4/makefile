@@ -1,2 +1,5 @@
+CC=gcc
+
 all:
-	gcc strings.c -o main -ggdb3 
+	$(CC) strings.c main.c -o main -ggdb3 
+# valgrind --leak-check=full ./main
