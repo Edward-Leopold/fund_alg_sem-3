@@ -93,7 +93,7 @@ errorCodes get_arr(const char* in_file, Employee*** result){
     int mem_size = 10;
     Employee** list = malloc(sizeof(Employee*) * (mem_size + 1));
 
-    const int size_of_line = 10000;
+    const int size_of_line = 100000;
     char str[size_of_line];
     while ((fgets(str, size_of_line, in)) != NULL){
         if(emp_count == mem_size){
@@ -147,7 +147,7 @@ errorCodes get_arr(const char* in_file, Employee*** result){
             continue;
         }
 
-        if (emp->id < 0 || !isfinite(emp->salary)){
+        if (emp->id < 0 || !isfinite(emp->salary) || emp->salary < 0){
             free(emp->name);
             free(emp->surname);
             free(emp);
