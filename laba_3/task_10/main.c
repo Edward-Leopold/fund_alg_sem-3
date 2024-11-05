@@ -189,7 +189,7 @@ errCodes read_strings(const char* in_file, char*** result){
         return MALLOC_ERR;
     }
 
-    const int len_str = 501;
+    const int len_str = 5001;
     char str[len_str];
     while ((fgets(str, len_str, input)) != NULL){
         int is_empty = 1;
@@ -289,7 +289,10 @@ TreeNode* build_tree(const char *str) {
             current = node;
         } else if (ch == '(') {
             TreeNode* temp = push_stack(stack, current);
-            if (!temp) return NULL;
+            if (!temp) {
+                free_stack(stack);
+                return NULL;
+            }
         } else if (ch == ')') {
             current = pop_stack(stack);
         } else if (ch == ',') {
@@ -368,7 +371,7 @@ int main(int argc, char** argv){
 
     char **strings;
     errCodes read_status = read_strings(in_file, &strings);
-    if(read_status != SUCCESS){ // handling errors from cli input
+    if(read_status != SUCCESS){
         switch (read_status){
         case MALLOC_ERR:
             printf("Malloc error!.\n");
@@ -386,7 +389,7 @@ int main(int argc, char** argv){
     }
 
     errCodes make_status = make_trees(out_file, strings);
-    if(make_status != SUCCESS){ // handling errors from cli input
+    if(make_status != SUCCESS){
         switch (make_status){
         case MALLOC_ERR:
             printf("Malloc error!.\n");

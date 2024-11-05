@@ -1,6 +1,8 @@
       A  (B     (E (G,  T,  R (W, Z)),  F (L,    M)), C)        
 A (B (E (G, T, R (W, U )), C)) 
- B ( A )
+
+
+ B ( A, G, F (D, Y)), 
 
                                                                         
 A(B(E(G,T,R(W,Z)),F(L,M)),C)
@@ -10,6 +12,7 @@ A(B(E(G,T,R(W,Z)),F(L,M)),C)
 
 
 
+ B ( A )
 
 
 
