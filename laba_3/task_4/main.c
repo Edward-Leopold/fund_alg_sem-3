@@ -43,6 +43,7 @@ typedef struct Time{
     int t_sec;
 }Time;
 
+// func for time 
 String* stringify_time(const struct tm* timestruct){
     char buffer[32];
     int sprintf_status = sprintf(buffer, "%02d:%02d:%04d %02d:%02d:%02d",
@@ -78,7 +79,6 @@ errCodes parse_time(const char* datetime, struct tm** timestruct){
 
     if (timestamp == -1) {
         if(ts) free(ts);
-        // *timestruct = NULL;
         return DATE_FORMAT_ERR;
     }
 
@@ -87,7 +87,7 @@ errCodes parse_time(const char* datetime, struct tm** timestruct){
     return SUCCESS;
 }
 
-
+// func for address
 void delete_address(Address *addr){
     if (addr){
         delete_string(addr->town);
@@ -97,7 +97,6 @@ void delete_address(Address *addr){
         free(addr);
     }
 }
-
 
 Address* create_adress(char* town, char* street, int house, char* building, int apartment, char* index){
     Address* addr = malloc(sizeof(Address));
@@ -118,11 +117,58 @@ Address* create_adress(char* town, char* street, int house, char* building, int 
     return addr;
 }
 
+// func for mail
+void delete_mail(Mail *mail){
+    if (mail){
+        // delete_address(&(mail->address));
+        delete_string(mail->address.town);
+        delete_string(mail->address.street);
+        delete_string(mail->address.building);
+        delete_string(mail->address.index);
 
+        delete_string(mail->mail_id);
+        delete_string(mail->mail_created_time);
+        delete_string(mail->mail_received_time);
+        free(mail);
+    }
+}
+
+Mail* create_mail(Address *addr, double weight, char* mail_id, String* mail_created_time, String* mail_received_time){
+    Mail* mail = malloc(sizeof(Mail));
+    if (!mail) return NULL;
+
+    String *mail_id_s = create_string(mail_id);
+    if (!mail_id_s) {
+        delete_mail(mail);
+        return NULL;
+    }
+
+    // mail->address = *create_adress(addr->town->text, addr->street->text, addr->house, addr->building->text, addr->apartment, addr->index->text);
+
+    mail->address.town = copy_new_string(addr->town);
+    mail->address.street = copy_new_string(addr->street);
+    mail->address.building = copy_new_string(addr->building);
+    mail->address.index = copy_new_string(addr->index);
+    mail->address.house = addr->house;
+    mail->address.apartment = addr->apartment;
+
+    mail->weight = weight;
+    mail->mail_id = mail_id_s;
+    mail->mail_created_time = copy_new_string(mail_created_time);
+    mail->mail_received_time = copy_new_string(mail_received_time);
+
+    if (!mail->address.town || !mail->address.street || !mail->address.building || !mail->address.index ||
+        !mail->mail_created_time || !mail->mail_received_time) {
+        delete_mail(mail);  // Clean up in case of allocation failure
+        return NULL;
+    }
+
+    return mail;
+}
 
 int main(){
-    // Address *adr = create_adress("Moscow", "Velikanova", 14, "1", 239, "345029");
-    // printf("%s\n", adr->street->text);
+    Address *adr = create_adress("Moscow", "Velikanova", 14, "1", 239, "345029");
+    printf("%s\n", adr->street->text);
     // delete_address(adr);
 
     char* timestr = "1:1:2024                              01:1200:12";
@@ -143,14 +189,27 @@ int main(){
     }
     
     
-    String *s = stringify_time(t1);
-    if (!s){
+    String *time_s = stringify_time(t1);
+    if (!time_s){
         printf("malloc error\n");
         return 1;
     }
-    printf("your date is %s\n", s->text);
+    printf("your date is %s\n", time_s->text);
+
+    Mail* mail = create_mail(adr, 12.5, "458501", time_s, time_s);
+    if (!mail){
+        printf("mail creating error\n");
+        free(t1);
+    
+        delete_string(time_s);
+        delete_address(adr);
+        return 1;
+    }
+    delete_mail(mail);
     free(t1);
-    delete_string(s);
+    
+    delete_string(time_s);
+    delete_address(adr);
 
     return 0;
 }
