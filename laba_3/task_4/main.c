@@ -34,14 +34,6 @@ typedef struct Post{
     int mails_size;
 }Post;
 
-typedef struct Time{
-    int t_year;
-    int t_mon;
-    int t_day;
-    int t_hour;
-    int t_min;
-    int t_sec;
-}Time;
 
 // func for time 
 String* stringify_time(const struct tm* timestruct){
@@ -120,7 +112,6 @@ Address* create_adress(char* town, char* street, int house, char* building, int 
 // func for mail
 void delete_mail(Mail *mail){
     if (mail){
-        // delete_address(&(mail->address));
         delete_string(mail->address.town);
         delete_string(mail->address.street);
         delete_string(mail->address.building);
@@ -143,8 +134,6 @@ Mail* create_mail(Address *addr, double weight, char* mail_id, String* mail_crea
         return NULL;
     }
 
-    // mail->address = *create_adress(addr->town->text, addr->street->text, addr->house, addr->building->text, addr->apartment, addr->index->text);
-
     mail->address.town = copy_new_string(addr->town);
     mail->address.street = copy_new_string(addr->street);
     mail->address.building = copy_new_string(addr->building);
@@ -159,12 +148,99 @@ Mail* create_mail(Address *addr, double weight, char* mail_id, String* mail_crea
 
     if (!mail->address.town || !mail->address.street || !mail->address.building || !mail->address.index ||
         !mail->mail_created_time || !mail->mail_received_time) {
-        delete_mail(mail);  // Clean up in case of allocation failure
+        delete_mail(mail);
         return NULL;
     }
 
     return mail;
 }
+
+// func for post
+Post* create_post(Address *addr){
+    Post* post = malloc(sizeof(Post));
+    if (!post) return NULL;
+
+    post->address = addr;
+    post->mem_size = 10;
+    post->mails_size = 0;
+
+    post->mails = malloc(sizeof(Mail) * (post->mem_size + 1));
+    if (!post->mails) {
+        free(post);
+        return NULL;
+    }
+
+    return post;
+}
+
+void delete_post(Post* post){
+    if(post){
+        for (int i = 0; i < post->mails_size; i++) {
+            delete_string(post->mails[i].mail_id);
+            delete_string(post->mails[i].mail_created_time);
+            delete_string(post->mails[i].mail_received_time);
+
+            delete_string(post->mails[i].address.town);
+            delete_string(post->mails[i].address.street);
+            delete_string(post->mails[i].address.building);
+            delete_string(post->mails[i].address.index);
+        }
+        free(post->mails);
+        delete_address(post->address);
+        free(post);
+    }
+}
+
+errCodes post_add_mail(Post* post, Mail* mail){
+    Mail copied_mail;
+    copied_mail.address.town = copy_new_string(mail->address.town);
+    copied_mail.address.street = copy_new_string(mail->address.street);
+    copied_mail.address.building = copy_new_string(mail->address.building);
+    copied_mail.address.index = copy_new_string(mail->address.index);
+    copied_mail.address.house = mail->address.house;
+    copied_mail.address.apartment = mail->address.apartment;
+
+    copied_mail.weight = mail->weight;
+    copied_mail.mail_id = copy_new_string(mail->mail_id);
+    copied_mail.mail_created_time = copy_new_string(mail->mail_created_time);
+    copied_mail.mail_received_time = copy_new_string(mail->mail_received_time);
+
+    if (!copied_mail.address.town || !copied_mail.address.street || !copied_mail.address.building ||
+        !copied_mail.address.index || !copied_mail.mail_id || !copied_mail.mail_created_time || !copied_mail.mail_received_time) {
+        
+        delete_string(copied_mail.address.town);
+        delete_string(copied_mail.address.street);
+        delete_string(copied_mail.address.building);
+        delete_string(copied_mail.address.index);
+        delete_string(copied_mail.mail_id);
+        delete_string(copied_mail.mail_created_time);
+        delete_string(copied_mail.mail_received_time);
+
+        return MALLOC_ERR;
+    }
+
+    if (post->mails_size == post->mem_size){
+        post->mem_size *= 2;
+        Mail* temp = realloc(post->mails, sizeof(Mail) * (post->mem_size + 1));
+        if (!temp) {
+            delete_string(copied_mail.mail_id);
+            delete_string(copied_mail.mail_created_time);
+            delete_string(copied_mail.mail_received_time);
+
+            delete_string(copied_mail.address.town);
+            delete_string(copied_mail.address.street);
+            delete_string(copied_mail.address.building);
+            delete_string(copied_mail.address.index);
+            return REALLOC_ERR;
+        }
+        post->mails = temp;
+    }
+    post->mails[post->mails_size] = copied_mail;
+    post->mails_size++;
+
+    return SUCCESS;
+}
+
 
 int main(){
     Address *adr = create_adress("Moscow", "Velikanova", 14, "1", 239, "345029");
@@ -196,20 +272,22 @@ int main(){
     }
     printf("your date is %s\n", time_s->text);
 
-    Mail* mail = create_mail(adr, 12.5, "458501", time_s, time_s);
-    if (!mail){
-        printf("mail creating error\n");
-        free(t1);
-    
-        delete_string(time_s);
-        delete_address(adr);
-        return 1;
-    }
-    delete_mail(mail);
+    Mail *mail1 = create_mail(adr, 12.5, "458501", time_s, time_s);
+    Mail *mail2 = create_mail(adr, 22.5, "458201", time_s, time_s);
+    Mail *mail3 = create_mail(adr, 13.5, "458661", time_s, time_s);
+    Post *post = create_post(adr);
+    post_add_mail(post, mail1);
+    post_add_mail(post, mail2);
+    post_add_mail(post, mail3);
+
+    delete_post(post);
+    delete_mail(mail1);
+    delete_mail(mail2);
+    delete_mail(mail3);
     free(t1);
     
     delete_string(time_s);
-    delete_address(adr);
+    // delete_address(adr);
 
     return 0;
 }

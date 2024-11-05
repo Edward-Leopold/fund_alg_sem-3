@@ -28,6 +28,7 @@ void delete_string(String* string){
     if (string){
         clear_string(string);
         free(string);
+        string = NULL;
     }
 }
 
