@@ -100,6 +100,15 @@ double calculate_average(const Student *student) {
     return sum / 5.0;
 }
 
+double calculate_total_average(const StudentArray *studs) {
+    if (!studs || studs->size == 0) return 0.0;
+    double total = 0.0;
+    for (int i = 0; i < studs->size; i++) {
+        total += calculate_average(&studs->students[i]);
+    }
+    return total / studs->size;
+}
+
 errCodes get_students(const char* filename_in, StudentArray *result){
     FILE* input = fopen(filename_in, "r");
     if (!input) return UNABLE_TO_OPEN_FILE;
@@ -151,8 +160,17 @@ errCodes get_students(const char* filename_in, StudentArray *result){
         for (int i = 0; i < 5; i++) {
             if (grades[i] > sizeof(unsigned char) || grades[i] < 0) continue;
         } 
-        for (int i = 0; i < students.size; i++){
-            if (id == students.students->id) continue;
+
+        int is_duplicate_id = 0;
+        for (int i = 0; i < students.size; i++) {
+            if (id == students.students[i].id) {
+                is_duplicate_id = 1;
+                break;
+            }
+        }
+
+        if (is_duplicate_id) {
+            continue; 
         }
         
         Student stud;
@@ -288,6 +306,54 @@ errCodes save_to_output(FILE *output, const Student *student) {
     return SUCCESS;
 }
 
+// comparators for qsort
+int comparator_by_id(const void *a, const void *b) {
+    const Student *student_a = (const Student *) a;
+    const Student *student_b = (const Student *) b;
+    if (student_a->id < student_b->id) return -1;
+    if (student_a->id > student_b->id) return 1;
+    return 0;
+}
+
+int comparator_by_name(const void *a, const void *b) {
+    const Student *student_a = (const Student *) a;
+    const Student *student_b = (const Student *) b;
+    return strcmp(student_a->name, student_b->name);
+}
+
+int comparator_by_surname(const void *a, const void *b) {
+    const Student *student_a = (const Student *) a;
+    const Student *student_b = (const Student *) b;
+    return strcmp(student_a->surname, student_b->surname);
+}
+
+int comparator_by_group(const void *a, const void *b) {
+    const Student *student_a = (const Student *) a;
+    const Student *student_b = (const Student *) b;
+    return strcmp(student_a->group, student_b->group);
+}
+
+// above average list
+void write_above_average_students(const StudentArray *stud_arr, FILE *output) {
+    if (!output) {
+        return;
+    }
+
+    double total_average = calculate_total_average(stud_arr);
+    fprintf(output, "Students with above average grade (%.2f):\n", total_average);
+
+    for (int i = 0; i < stud_arr->size; i++) {
+        double student_average = calculate_average(&stud_arr->students[i]);
+        if (student_average > total_average) {
+            fprintf(output, "%s %s, Group: %s, Average Grade: %.2f\n",
+                    stud_arr->students[i].name,
+                    stud_arr->students[i].surname,
+                    stud_arr->students[i].group,
+                    student_average);
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     char *filename_in, *filename_out;
 
@@ -322,6 +388,12 @@ int main(int argc, char** argv) {
         default:
             break;
         }
+        return 1;
+    }
+
+    if(students.size == 0) {
+        clear_students_arr(&students);
+        printf("No students in correct format in input file\n");
         return 1;
     }
 
@@ -502,6 +574,77 @@ int main(int argc, char** argv) {
                 while (getchar() != '\n');
             }
             free(group);
+            break;
+        case 5:
+            qsort(students.students, students.size, sizeof(Student), comparator_by_id);
+            printf("\nSorted student list by id:\n");
+            for (int i = 0; i < students.size; i++) {
+            printf("student id: %d, full name: %s %s, group: %s\n",
+                    students.students[i].id,
+                    students.students[i].name,
+                    students.students[i].surname,
+                    students.students[i].group);
+            }
+            break;
+        case 6:
+            qsort(students.students, students.size, sizeof(Student), comparator_by_surname);
+            printf("\nSorted student list by surname:\n");
+            for (int i = 0; i < students.size; i++) {
+            printf("student id: %d, full name: %s %s, group: %s\n",
+                    students.students[i].id,
+                    students.students[i].name,
+                    students.students[i].surname,
+                    students.students[i].group);
+            }
+            break;
+        case 7:
+            qsort(students.students, students.size, sizeof(Student), comparator_by_name);
+            printf("\nSorted student list by name:\n");
+            for (int i = 0; i < students.size; i++) {
+            printf("student id: %d, full name: %s %s, group: %s\n",
+                    students.students[i].id,
+                    students.students[i].name,
+                    students.students[i].surname,
+                    students.students[i].group);
+            }
+            break;
+        case 8:
+            qsort(students.students, students.size, sizeof(Student), comparator_by_group);
+            printf("\nSorted student list by group:\n");
+            for (int i = 0; i < students.size; i++) {
+            printf("student id: %d, full name: %s %s, group: %s\n",
+                    students.students[i].id,
+                    students.students[i].name,
+                    students.students[i].surname,
+                    students.students[i].group);
+            }
+            break;
+        case 9:
+            printf("Would you like to save the output to a file as well? (1 = Yes, other number = No): ");
+    
+            int option;
+            if (scanf("%d", &option) == 1) {
+                double total_average = calculate_total_average(&students);
+
+                printf("\nStudents with above average grade (%.2f):\n", total_average);
+                for (int i = 0; i < students.size; i++) {
+                    double student_average = calculate_average(&students.students[i]);
+                    if (student_average > total_average) {
+                        printf("%s %s, Group: %s, Average Grade: %.2f\n",
+                            students.students[i].name,
+                            students.students[i].surname,
+                            students.students[i].group,
+                            student_average);
+                    }
+                }
+
+                if (option == 1) {
+                    write_above_average_students(&students, output);
+                }
+            } else {
+                printf("Invalid input.\n");
+                while (getchar() != '\n'); 
+            }
             break;
         default:
             printf("Invalid command.\n");
