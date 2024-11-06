@@ -11,15 +11,15 @@ typedef enum errCodes{
     SAME_FILE_ERR,
     IVNALID_NUM_ARGUEMENTS,
     UNABLE_TO_OPEN_FILE,
-    
+    INCORRECT_INPUT,
     
     SUCCESS
 } errCodes;
 
 typedef struct Student{
     unsigned int id;
-    char *first_name;
-    char *last_name;
+    char *name;
+    char *surname;
     char *group;
     unsigned char *grades;
 } Student;
@@ -28,6 +28,26 @@ typedef struct {
     Student *students;
     int size;
 } StudentArray;
+
+void clear_student(Student *student) {
+    if (student) {
+        free(student->name);
+        free(student->surname);
+        free(student->group);
+        free(student->grades);
+    }
+}
+
+void clear_students_arr(StudentArray *student_array) {
+    if (student_array && student_array->students) {
+        for (int i = 0; i < student_array->size; i++) {
+            clear_student(&student_array->students[i]);
+        }
+        free(student_array->students);
+        student_array->students = NULL;
+        student_array->size = 0;
+    }
+}
 
 errCodes is_same_file(const char *a, const char *b){
     errCodes res = SUCCESS;
@@ -45,19 +65,110 @@ errCodes is_same_file(const char *a, const char *b){
     return res;
 }
 
-errCodes getArgs(const int argc, const char** argv, char** filename_in, char** filename_out){
+errCodes getArgs(int argc, char** argv, char** filename_in, char** filename_out){
     if (argc != 3) return IVNALID_NUM_ARGUEMENTS;
 
     errCodes err_status = is_same_file(argv[1], argv[2]);
     if (err_status != SUCCESS) return err_status;
 
-    filename_in = argv[1];
-    filename_out = argv[2]; 
+    *filename_in = argv[1];
+    *filename_out = argv[2]; 
 
     return SUCCESS;
 }
 
+int is_latin_str(const char *str){
+    int len = strlen(str);
+    for(int i = 0; i < len; i++) {
+        if (!isalpha(str[i])) return 0;
+    }
+    return 1;
+}
 
+errCodes get_students(const char* filename_in, StudentArray *result){
+    FILE* input = fopen(filename_in, "r");
+    if (!input) return UNABLE_TO_OPEN_FILE;
+
+    int mem_size = 10;
+    StudentArray students;
+    students.size = 0;
+    students.students = (Student *)malloc(sizeof(Student) * (mem_size + 1));
+    if (!students.students) {
+        fclose(input);
+        return MALLOC_ERR;
+    }
+
+    const int size_of_line = 100000;
+    char str[size_of_line];
+    while ((fgets(str, size_of_line, input)) != NULL){
+        int is_empty = 1;
+        for (int i = 0; str[i]; i++) {
+            if (!isspace(str[i])) {
+                is_empty = 0;
+                break;
+            }
+        }
+        if (is_empty) continue;
+
+        if(students.size == mem_size){
+            mem_size *= 2;
+            Student *temp = (Student *)realloc(students.students, sizeof(Student) * (mem_size + 1));
+            if(!temp){
+                fclose(input);
+                free(students.students);
+                return REALLOC_ERR;
+            }
+            students.students = temp;
+        }
+
+        int field_size = 100;
+        int id; 
+        char name[field_size], surname[field_size], group[field_size];
+        int grades[5];
+
+        int scan_status = sscanf(str, "%d %99s %99s %99s %d %d %d %d %d", &id, name, surname, group, &grades[0], &grades[1], &grades[2], &grades[3], &grades[4]);
+        if (scan_status != 9){
+            continue;
+        }
+        if(id < 0 || !is_latin_str(name) || !is_latin_str(surname)) {
+            continue;
+        }
+        for (int i = 0; i < 5; i++) {
+            if (grades[i] > sizeof(unsigned char) || grades[i] < 0) continue;
+        } 
+        
+        Student stud;
+        stud.name = malloc(100 * sizeof(char));
+        stud.surname = malloc(100 * sizeof(char));
+        stud.group = malloc(100 * sizeof(char));
+        stud.grades = malloc(5 * sizeof(unsigned char));
+        if (!stud.name || !stud.surname || !stud.group || !stud.grades) {
+            if (stud.grades) free(stud.grades);
+            if (stud.name) free(stud.name);
+            if (stud.surname) free(stud.surname);
+            if (stud.group) free(stud.group);
+            free(students.students);
+            fclose(input);
+            return MALLOC_ERR;
+        }
+
+        stud.id = id;
+        strcpy(stud.name, name);
+        strcpy(stud.surname, surname);
+        strcpy(stud.name, name);
+        for (int i = 0; i < 5; i++) {
+            stud.grades[i] = (unsigned char)grades[i];
+        }
+
+        students.students[students.size] = stud;
+        students.size++; 
+    }
+
+    *result = students;
+
+    fclose(input);
+    return SUCCESS;
+}
 
 int main(int argc, char** argv) {
     char *filename_in, *filename_out;
@@ -77,6 +188,10 @@ int main(int argc, char** argv) {
         return 1;
     }
     
+    StudentArray students;
+    errCodes get_students_status = get_students(filename_in, &students);
+    for(int i = 0; i < students.size; i++) printf("%s\n", students.students[i].surname);
 
+    clear_students_arr(&students);
     return 0;
 }
