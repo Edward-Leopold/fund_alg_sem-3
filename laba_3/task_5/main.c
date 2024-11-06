@@ -136,6 +136,9 @@ errCodes get_students(const char* filename_in, StudentArray *result){
         for (int i = 0; i < 5; i++) {
             if (grades[i] > sizeof(unsigned char) || grades[i] < 0) continue;
         } 
+        for (int i = 0; i < students.size; i++){
+            if (id == students.students->id) continue;
+        }
         
         Student stud;
         stud.name = malloc(100 * sizeof(char));
@@ -190,7 +193,64 @@ int main(int argc, char** argv) {
     
     StudentArray students;
     errCodes get_students_status = get_students(filename_in, &students);
-    for(int i = 0; i < students.size; i++) printf("%s\n", students.students[i].surname);
+    if (get_students_status != SUCCESS){
+        switch (get_students_status){
+        case MALLOC_ERR:
+            printf("malloc error occured while reading students from file\n");
+            break;
+        case REALLOC_ERR:
+            printf("realloc error occured while reading students from file\n");
+            break;
+        case UNABLE_TO_OPEN_FILE:
+            printf("can't open file %s\n", filename_in);
+            break;
+        default:
+            break;
+        }
+        return 1;
+    }
+
+    FILE* output = fopen(filename_out, "w");
+    if (!output){
+        printf("Can't open output file %s\n", filename_out);
+        clear_students_arr(&students);
+        return 1;
+    }
+
+    while(1){
+        printf("\nMenu:\n");
+        printf("1: Search student by id\n");
+        printf("3: Search student by surname\n");
+        printf("2: Search student by name\n");
+        printf("4: Search student by group\n");
+        printf("5: Sort students by id\n");
+        printf("6: Sort students by surname\n");
+        printf("7: Sort students by name\n");
+        printf("8: Sort students by group\n");
+        printf("9: Print students with grades above average\n");
+        printf("0: Exit\n");
+        printf("Enter command number: ");
+
+        int command;
+        if (scanf("%d", &command) != 1) {
+            printf("Invalid input. Please enter a number.\n");
+            while (getchar() != '\n');
+            continue;
+        }
+
+        switch (command){
+        case 0:
+            fclose(output);
+            clear_students_arr(&students);
+            return 0;
+        case 1:
+            printf("some command");
+            break;
+        default:
+            printf("Invalid command.\n");
+            break;
+        }
+    }
 
     clear_students_arr(&students);
     return 0;

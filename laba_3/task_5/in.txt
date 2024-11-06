@@ -5,6 +5,7 @@
 5 Tom Brown 4 4 4 4
 6 Invalid Name123 D 3 4 5 4 3
 7 Kate Lee B    1 4 3 5 4
+7 John Lee B    1 4 3 5 4
 8 Sam White F   3 4 5 4 3
 9 John Doe A    5 5 5 5 5
 109 John Doe A  2 3 3 2 2
