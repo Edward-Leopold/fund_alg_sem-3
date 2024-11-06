@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <linux/limits.h>
 
+#define STR_FIELD_SIZE 100 
+
 typedef enum errCodes{
     MALLOC_ERR,
     REALLOC_ERR,
@@ -234,7 +236,7 @@ errCodes search_by_str_fied(const StudentArray *students, StudentArray *result, 
             stud.id = students->students[i].id;
             strcpy(stud.name, students->students[i].name);
             strcpy(stud.surname, students->students[i].surname);
-            strcpy(stud.name, students->students[i].group);
+            strcpy(stud.group, students->students[i].group);
             for (int j = 0; j < 5; j++) {
                 stud.grades[j] = (unsigned char)students->students[i].grades[j];
             }
@@ -243,6 +245,11 @@ errCodes search_by_str_fied(const StudentArray *students, StudentArray *result, 
             res_students.size++; 
         }
     }   
+
+    if (res_students.size == 0) {
+        free(res_students.students);
+        return NO_SUCH_STUDENTS;
+    }
 
     *result = res_students;
     return SUCCESS;
@@ -328,8 +335,8 @@ int main(int argc, char** argv) {
     while(1){
         printf("\nMenu:\n");
         printf("1: Search student by id\n");
-        printf("3: Search student by surname\n");
-        printf("2: Search student by name\n");
+        printf("2: Search student by surname\n");
+        printf("3: Search student by name\n");
         printf("4: Search student by group\n");
         printf("5: Sort students by id\n");
         printf("6: Sort students by surname\n");
@@ -366,6 +373,7 @@ int main(int argc, char** argv) {
                     if (scanf("%d", &save_choice) != 1) printf("Invalid input. Please enter a number.\n");
                     switch (save_choice) {
                         case 0:
+                            printf("no\n");
                             break;
                         case 1:
                             printf("yes\n");
@@ -388,7 +396,112 @@ int main(int argc, char** argv) {
             }
             break;
         case 2:
-
+            printf("Enter student's surname: ");
+            char *surname = malloc(sizeof(char) * STR_FIELD_SIZE);
+            if(!surname){
+                printf("malloc error occured while getting your answer\n");
+                break;
+            }
+            if(scanf("%99s", surname)){
+                StudentArray studs;
+                errCodes search_status = search_by_surname(&students, &studs, surname);
+                if(search_status != SUCCESS){
+                    switch (search_status){
+                        case MALLOC_ERR:
+                            printf("malloc error occured while searching students\n");
+                            break;
+                        case REALLOC_ERR:
+                            printf("realloc error occured while searching students\n");
+                            break;
+                        case NO_SUCH_STUDENTS:
+                            printf("No such students with surname %s\n", surname);
+                            break;
+                        default:
+                            break;
+                    }
+                } else{
+                    for(int i = 0; i < studs.size; i++){
+                        printf("Student %s %s, id: %d, group: %s\n", studs.students[i].name, studs.students[i].surname, studs.students[i].id, studs.students[i].group);
+                    }
+                    clear_students_arr(&studs);
+                }
+            }else{
+                printf("Invalid surname format\n");
+                while (getchar() != '\n');
+            }
+            free(surname);
+            break;
+        case 3:
+            printf("Enter student's name: ");
+            char *name = malloc(sizeof(char) * STR_FIELD_SIZE);
+            if(!name){
+                printf("malloc error occured while getting your answer\n");
+                break;
+            }
+            if(scanf("%99s", name)){
+                StudentArray studs;
+                errCodes search_status = search_by_name(&students, &studs, name);
+                if(search_status != SUCCESS){
+                    switch (search_status){
+                        case MALLOC_ERR:
+                            printf("malloc error occured while searching students\n");
+                            break;
+                        case REALLOC_ERR:
+                            printf("realloc error occured while searching students\n");
+                            break;
+                        case NO_SUCH_STUDENTS:
+                            printf("No such students with name %s\n", name);
+                            break;
+                        default:
+                            break;
+                    }
+                } else{
+                    for(int i = 0; i < studs.size; i++){
+                        printf("Student %s %s, id: %d, group: %s\n", studs.students[i].name, studs.students[i].surname, studs.students[i].id, studs.students[i].group);
+                    }
+                    clear_students_arr(&studs);
+                }
+            }else{
+                printf("Invalid name format\n");
+                while (getchar() != '\n');
+            }
+            free(name);
+            break;
+        case 4:
+            printf("Enter student's group: ");
+            char *group = malloc(sizeof(char) * STR_FIELD_SIZE);
+            if(!group){
+                printf("malloc error occured while getting your answer\n");
+                break;
+            }
+            if(scanf("%99s", group)){
+                StudentArray studs;
+                errCodes search_status = search_by_group(&students, &studs, group);
+                if(search_status != SUCCESS){
+                    switch (search_status){
+                        case MALLOC_ERR:
+                            printf("malloc error occured while searching students\n");
+                            break;
+                        case REALLOC_ERR:
+                            printf("realloc error occured while searching students\n");
+                            break;
+                        case NO_SUCH_STUDENTS:
+                            printf("No such students from group %s\n", group);
+                            break;
+                        default:
+                            break;
+                    }
+                } else{
+                    for(int i = 0; i < studs.size; i++){
+                        printf("Student %s %s, id: %d, group: %s\n", studs.students[i].name, studs.students[i].surname, studs.students[i].id, studs.students[i].group);
+                    }
+                    clear_students_arr(&studs);
+                }
+            }else{
+                printf("Invalid group format\n");
+                while (getchar() != '\n');
+            }
+            free(group);
             break;
         default:
             printf("Invalid command.\n");
