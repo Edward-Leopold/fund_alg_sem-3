@@ -150,14 +150,6 @@ int main(){
     Vector* v2 = create_vector(5, 4.0, 2.0, 2.0, 2.0, 2.0);     
     Vector* v3 = create_vector(5, 1.0, 2.0, 5.0, 1.0, 1.0);   
 
-    // Vector* v1 = create_vector(5, 0.4, 5.8, -0.89, 1.0, 4.0);       
-    // Vector* v2 = create_vector(5, 2.4, 5.8, 0.89, -1.0, 49.0);      
-    // Vector* v3 = create_vector(5, 8.4, 5.98, 10.89, 12.0, -4.0);    
-    // Vector* v4 = create_vector(5, -10.0, 20.0, -15.0, 0.5, 3.2);    
-    // Vector* v5 = create_vector(5, 3.1, -7.5, 11.1, 12.2, -2.8);     
-    // Vector* v6 = create_vector(5, 15.0, -3.5, 6.7, 8.9, 20.0);      
-    // Vector* v7 = create_vector(5, 4.0, 8.0, -9.0, 0.1, -25.0);      
-    // Vector* v8 = create_vector(5, -1.2, 9.5, 2.3, -18.0, 3.5);      
 
     int num_norms = 3;
     int num_vectors = 3;
@@ -167,7 +159,7 @@ int main(){
     for (int i = 0; i < n; i++) {
         matrix[i] = (double*)malloc(n * sizeof(double));
         for (int j = 0; j < n; j++) {
-            matrix[i][j] = (i == j) ? 1.0 : 0.0; // Identity matrix
+            matrix[i][j] = (i == j) ? 1.0 : 0.0; 
         }
     }
     Vector ***result;
@@ -189,11 +181,6 @@ int main(){
         delete_vector(v3);
         for (int i = 0; i < n; i++) free(matrix[i]);
         free(matrix);
-        // delete_vector(v4);
-        // delete_vector(v5);
-        // delete_vector(v6);
-        // delete_vector(v7);
-        // delete_vector(v8);
         return 1;
     }
 
@@ -211,11 +198,6 @@ int main(){
     delete_vector(v1);
     delete_vector(v2);
     delete_vector(v3);
-    // delete_vector(v4);
-    // delete_vector(v5);
-    // delete_vector(v6);
-    // delete_vector(v7);
-    // delete_vector(v8);
     for (int i = 0; i < n; i++) free(matrix[i]);
     free(matrix);
     return 0;
