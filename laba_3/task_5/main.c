@@ -12,7 +12,9 @@ typedef enum errCodes{
     IVNALID_NUM_ARGUEMENTS,
     UNABLE_TO_OPEN_FILE,
     INCORRECT_INPUT,
-    
+    NO_SUCH_STUDENTS,
+    CANT_SAVE_OUTPUT,
+
     SUCCESS
 } errCodes;
 
@@ -24,10 +26,12 @@ typedef struct Student{
     unsigned char *grades;
 } Student;
 
-typedef struct {
+typedef struct StudentArray{
     Student *students;
     int size;
 } StudentArray;
+
+typedef int (*CompareFunc)(const Student *student, const char *value);
 
 void clear_student(Student *student) {
     if (student) {
@@ -83,6 +87,15 @@ int is_latin_str(const char *str){
         if (!isalpha(str[i])) return 0;
     }
     return 1;
+}
+
+double calculate_average(const Student *student) {
+    if (!student || !student->grades) return 0.0;
+    double sum = 0.0;
+    for (int i = 0; i < 5; i++) {
+        sum += student->grades[i];
+    }
+    return sum / 5.0;
 }
 
 errCodes get_students(const char* filename_in, StudentArray *result){
@@ -158,7 +171,7 @@ errCodes get_students(const char* filename_in, StudentArray *result){
         stud.id = id;
         strcpy(stud.name, name);
         strcpy(stud.surname, surname);
-        strcpy(stud.name, name);
+        strcpy(stud.group, group);
         for (int i = 0; i < 5; i++) {
             stud.grades[i] = (unsigned char)grades[i];
         }
@@ -170,6 +183,101 @@ errCodes get_students(const char* filename_in, StudentArray *result){
     *result = students;
 
     fclose(input);
+    return SUCCESS;
+}
+
+// search functions
+
+Student *search_by_id(const StudentArray *students, unsigned int id) {
+    for (int i = 0; i < students->size; i++) {
+        if (students->students[i].id == id) {
+            return &students->students[i];
+        }
+    }
+    return NULL;
+}
+
+
+errCodes search_by_str_fied(const StudentArray *students, StudentArray *result, const char *value, CompareFunc cmp) {
+    StudentArray res_students;
+    int mem_size = 10;
+    res_students.size = 0;
+    res_students.students = (Student *)malloc(sizeof(Student) * (mem_size + 1));
+    if (!res_students.students) return MALLOC_ERR;
+    
+    for (int i = 0; i < students->size; i++) {
+        if (cmp(&students->students[i], value)) {
+            if(res_students.size == mem_size){
+                mem_size *= 2;
+                Student *temp = (Student *)realloc(res_students.students, sizeof(Student) * (mem_size));
+                if(!temp){
+                    free(res_students.students);
+                    return REALLOC_ERR;
+                }
+                res_students.students = temp;
+            }
+
+            Student stud;
+            stud.name = malloc(100 * sizeof(char));
+            stud.surname = malloc(100 * sizeof(char));
+            stud.group = malloc(100 * sizeof(char));
+            stud.grades = malloc(5 * sizeof(unsigned char));
+            if (!stud.name || !stud.surname || !stud.group || !stud.grades) {
+                if (stud.grades) free(stud.grades);
+                if (stud.name) free(stud.name);
+                if (stud.surname) free(stud.surname);
+                if (stud.group) free(stud.group);
+                free(res_students.students);
+                return MALLOC_ERR;
+            }
+
+            stud.id = students->students[i].id;
+            strcpy(stud.name, students->students[i].name);
+            strcpy(stud.surname, students->students[i].surname);
+            strcpy(stud.name, students->students[i].group);
+            for (int j = 0; j < 5; j++) {
+                stud.grades[j] = (unsigned char)students->students[i].grades[j];
+            }
+
+            res_students.students[res_students.size] = stud;
+            res_students.size++; 
+        }
+    }   
+
+    *result = res_students;
+    return SUCCESS;
+}
+
+int compare_by_surname(const Student *student, const char *surname) {
+    return strcmp(student->surname, surname) == 0;
+}
+
+int compare_by_name(const Student *student, const char *name) {
+    return strcmp(student->name, name) == 0;
+}
+
+int compare_by_group(const Student *student, const char *group) {
+    return strcmp(student->group, group) == 0;
+}
+
+errCodes search_by_surname(const StudentArray *students, StudentArray *result, const char *surname) {
+    return search_by_str_fied(students, result, surname, compare_by_surname);
+}
+
+errCodes search_by_name(const StudentArray *students, StudentArray *result, const char *name) {
+    return search_by_str_fied(students, result, name, compare_by_name);
+}
+
+errCodes search_by_group(const StudentArray *students, StudentArray *result, const char *group) {
+    return search_by_str_fied(students, result, group, compare_by_group);
+}
+
+errCodes save_to_output(FILE *output, const Student *student) {
+    if (!student || !output) return CANT_SAVE_OUTPUT;
+
+    int print_status = fprintf(output, "id: %u, Full name: %s %s, Group: %s, Average Grade: %.2f\n", 
+                                student->id, student->name, student->surname, student->group, calculate_average(student));
+    if (print_status < 0) return CANT_SAVE_OUTPUT;
     return SUCCESS;
 }
 
@@ -244,7 +352,43 @@ int main(int argc, char** argv) {
             clear_students_arr(&students);
             return 0;
         case 1:
-            printf("some command");
+            printf("Enter student id: ");
+            unsigned int id;
+            if (scanf("%u", &id) == 1) {
+                Student *student = search_by_id(&students, id);
+                if (student) {
+                    printf("Found student: Full name %s %s, Group: %s, Average grade: %.2f\n",
+                            student->name, student->surname,
+                            student->group, calculate_average(student));
+
+                    printf("Do you want to save this info to trace file? (1 - yes, 0 - no): ");
+                    int save_choice;
+                    if (scanf("%d", &save_choice) != 1) printf("Invalid input. Please enter a number.\n");
+                    switch (save_choice) {
+                        case 0:
+                            break;
+                        case 1:
+                            printf("yes\n");
+                            if (save_to_output(output, student) == SUCCESS){
+                                printf("Information saved to trace file\n");
+                            } else{
+                                printf("An error during writing to trace file occured\n");
+                            }
+                            break;
+                        default:
+                            printf("no\n");
+                            break;
+                    }
+                } else {
+                    printf("Student with id %u not found.\n", id);
+                }
+            } else {
+                printf("Invalid id format.\n");
+                while (getchar() != '\n');
+            }
+            break;
+        case 2:
+
             break;
         default:
             printf("Invalid command.\n");
@@ -252,6 +396,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    fclose(output);
     clear_students_arr(&students);
     return 0;
 }
