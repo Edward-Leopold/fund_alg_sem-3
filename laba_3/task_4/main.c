@@ -4,11 +4,13 @@
 #include <time.h>
 #include "strings.h"
 
+#define STR_FIELD_SIZE 100 
+
 typedef enum errCodes{
     MALLOC_ERR,
     REALLOC_ERR,
     DATE_FORMAT_ERR,
-    DELETING_MAIL_ERR,
+    MAIL_NOT_FOUND,
     ADDRESS_INPUT_ERR,
     MAIL_ID_ERR,
 
@@ -24,6 +26,8 @@ typedef struct Address{
 	String* index;
 }Address;
 
+// Address *addr
+// Mail.addres = *addr;
 typedef struct Mail{
     Address address;
     double weight;
@@ -289,28 +293,26 @@ errCodes post_add_mail(Post* post, Mail* mail){
     return SUCCESS;
 }
 
-errCodes post_delete_mail(Post* post, String* mail_id) {
-    if (!post || !mail_id) return DELETING_MAIL_ERR;
+errCodes post_delete_mail(Post* post, char* mail_id) {
+    String* mail_id_str = create_string(mail_id);
+    if (!mail_id_str) return MALLOC_ERR;
 
     int index = -1;
-
     for (int i = 0; i < post->mails_size; i++) {
-        if (compare_strings(post->mails[i].mail_id, mail_id) == 0) {
+        if (compare_strings(post->mails[i].mail_id, mail_id_str) == 0) {
             index = i;
             break;
         }
     }
-
-    if (index == -1) return DELETING_MAIL_ERR;
+    delete_string(mail_id_str);
+    if (index == -1) return MAIL_NOT_FOUND;
 
     delete_mail_content(&post->mails[index]);
-
     for (int i = index; i < post->mails_size - 1; i++) {
         post->mails[i] = post->mails[i + 1];
     }
-
     post->mails_size--;
-
+    
     return SUCCESS;
 }
 
@@ -328,82 +330,98 @@ int main(){
         return 1;
     }
 
-    int choice;
+    int command;
     do {
         printf("\n--- Почтовое меню ---\n");
-        printf("1. Добавить письмо\n");
-        printf("2. Удалить письмо\n");
-        printf("3. Показать все письма\n");
+        printf("1. Добавить посылку\n");
+        printf("2. Удалить посылку\n");
+        printf("3. Показать все посылки\n");
         printf("4. Выход\n");
         printf("Выберите опцию: ");
-        if (scanf("%d", &choice) != 1) {
+        if (scanf("%d", &command) != 1) {
             printf("Ошибка: неверный ввод для выбора опции.\n");
             while (getchar() != '\n'); // очистка буфера
             continue;
         }
 
-        switch (choice) {
-            case 1: {
-                int buf_size = 1000;
-                char town[1000], street[1000], building[1000], index[1000], mail_id[1000], created_time[1000], received_time[1000];
+        switch (command) {
+            case 1: { // create mail
+                int buf_size = STR_FIELD_SIZE; // buf_size = 100
+                char town[buf_size], street[buf_size], building[buf_size], index[buf_size], mail_id[buf_size], created_time[buf_size], received_time[buf_size];
                 int house, apartment;
                 double weight;
                 
                 // receiving data
                 printf("Введите город: ");
-                if (scanf("%49s", town) != 1) {
+                if (scanf("%99s", town) != 1) {
                     printf("Неверный ввод для города.\n");
+                    while (getchar() != '\n');
                     continue; 
                 } 
 
                 printf("Введите улицу: ");
-                if (scanf("%49s", street) != 1) {
+                if (scanf("%99s", street) != 1) {
                     printf("Неверный ввод для улицы.\n");
+                    while (getchar() != '\n');
                     continue; 
                 } 
 
                 printf("Введите номер дома: ");
                 if (scanf("%d", &house) != 1) {
                     printf("Неверный ввод для номера дома.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
                 printf("Введите корпус: ");
-                if (scanf("%9s", building) != 1) {
+                if (scanf("%99s", building) != 1) {
                     printf("Неверный ввод для корпуса.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
                 printf("Введите номер квартиры: ");
                 if (scanf("%d", &apartment) != 1) {
                     printf("Неверный ввод для номера квартиры.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
-                printf("Введите индекс: ");
-                if (scanf("%9s", index) != 1) {
+                printf("Введите индекс получателя: ");
+                if (scanf("%99s", index) != 1) {
                     printf("Неверный ввод для индекса.\n");
+                    while (getchar() != '\n');
+                    continue;  
+                }  
+
+                printf("Введите вес послыки: ");
+                if (scanf("%lf", &weight) != 1) {
+                    printf("Неверный ввод веса послыки.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
                 printf("Введите ID письма: ");
-                if (scanf("%19s", mail_id) != 1) {
+                if (scanf("%99s", mail_id) != 1) {
                     printf("Неверный ввод для ID письма.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
                 printf("Введите время создания (dd:MM:yyyy hh:mm:ss): ");
-                if (scanf("%19s", created_time) != 1) {
+                if (scanf("%99s", created_time) != 1) {
                     printf("Неверный ввод для времени создания.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }  
 
                 printf("Введите время вручения (dd:MM:yyyy hh:mm:ss): ");
-                if (scanf("%19s", received_time) != 1) {
+                if (scanf("%99s", received_time) != 1) {
                     printf("Неверный ввод для времени вручения.\n");
+                    while (getchar() != '\n');
                     continue;  
                 }
-
+                while (getchar() != '\n');
 
                 // validating data
                 errCodes date_status = validate_address(town, street, house, building, apartment, index); //valiidate address
@@ -423,14 +441,14 @@ int main(){
                     continue; 
                 }
 
-                struct tm* tm_t1; // validate time
-                struct tm* tm_t2;
-                errCodes tm_t1_status = parse_time(created_time, tm_t1);
+                struct tm* tm_t1 = NULL; // validate time
+                struct tm* tm_t2 = NULL;
+                errCodes tm_t1_status = parse_time(created_time, &tm_t1);
                 if (tm_t1_status != SUCCESS) {
                     printf("Ошибка задания времени создания послыки\n");
                     continue; 
                 }
-                errCodes tm_t2_status = parse_time(created_time, tm_t2);
+                errCodes tm_t2_status = parse_time(received_time, &tm_t2);
                 if (tm_t2_status != SUCCESS) {
                     printf("Ошибка задания времени отправки послыки\n");
                     free(tm_t1);
@@ -446,77 +464,93 @@ int main(){
                 }
 
                 // creating structures 
+                // create address for mail
                 Address *mail_addr = create_adress(town, street, house, building, apartment, index);
-                if (mail_addr != SUCCESS) {
-                    printf("Ошибка создания адреса!\n");
+                if (!mail_addr) {
+                    printf("Не удалось выделить память для данных адреса!\n");
                     free(tm_t1);
                     free(tm_t2);
                     continue; 
                 }
 
-                
-
-                // String  *town, *street, *buildiing, *index, *mail_id, *created_time, *received_time;
-                
-
-
-                // Создание адреса и временных меток
-                Address* address = create_adress(town, street, house, building, apartment, index);
-                String* created_time_s = create_string(created_time);
-                String* received_time_s = create_string(received_time);
-
-                if (!address || !created_time_s || !received_time_s) {
-                    printf("Ошибка: не удалось выделить память для данных письма.\n");
-                    delete_address(address);
-                    delete_string(created_time_s);
-                    delete_string(received_time_s);
-                    break;
+                // create time strings for mail
+                String *created_time_str = stringify_time(tm_t1);
+                if (!created_time_str){
+                    printf("Не удалось выделить память для данных времени создания посылки!\n");
+                    free(tm_t1);
+                    free(tm_t2);
                 }
-
-                // Создание письма и добавление в массив
-                Mail* new_mail = create_mail(address, weight, mail_id, created_time_s, received_time_s);
-                if (post_add_mail(post, new_mail) != SUCCESS) {
-                    printf("Ошибка: не удалось добавить письмо.\n");
-                    delete_mail(new_mail);
-                } else {
-                    printf("Письмо успешно добавлено.\n");
+                String *received_time_str = stringify_time(tm_t2);
+                if (!received_time_str){
+                    printf("Не удалось выделить память для данных времени получения посылки!\n");
+                    delete_string(created_time_str);
+                    free(tm_t1);
+                    free(tm_t2);
                 }
+                free(tm_t1);
+                free(tm_t2);
 
-                // Очистка временных данных
-                delete_mail(new_mail);
-                delete_address(address);
-                delete_string(created_time_s);
-                delete_string(received_time_s);
+                // create mail with address for post
+                Mail *mail = create_mail(mail_addr, weight, mail_id, created_time_str, received_time_str);
+                if (!mail){
+                    printf("Не удалось выделить память для данных посылки!\n");
+                    delete_address(mail_addr);
+                    delete_string(created_time_str);
+                    delete_string(received_time_str);
+                    continue; 
+                }
+                delete_address(mail_addr);
+                delete_string(created_time_str);
+                delete_string(received_time_str);
+
+                errCodes post_add_mail_status = post_add_mail(post, mail);
+                if (post_add_mail_status != SUCCESS){
+                    printf("Не удалось выделить память для записи послыки в почтовое отделение!\n");
+                    delete_mail(mail);
+                    continue;
+                }
+                delete_mail(mail);
+                break;
+            }
+            case 2: { // delete mail
+                char mail_id[STR_FIELD_SIZE];
+                printf("Введите id посылки для удаления: ");
+                if (scanf("%99s", mail_id) != 1) {
+                    printf("Неверный формат id.\n");
+                    while (getchar() != '\n');
+                    continue; 
+                }
+                while (getchar() != '\n');
+
+                errCodes delete_mail_status = post_delete_mail(post, mail_id);
+                if(delete_mail_status != SUCCESS){
+                    switch (delete_mail_status){
+                    case MALLOC_ERR:
+                        printf("Не удалось выделить память для строки id\n");
+                        break;
+                    case MAIL_NOT_FOUND:
+                        printf("Письмо с id %s не найдено\n", mail_id);
+                        break;
+                    default:
+                        break;
+                    }
+                } else{
+                    printf("Письмо с id %s успешно удалено \n", mail_id);
+                }
 
                 break;
             }
-            case 2: {
-                // Удаление письма
-                char mail_id[20];
-                if (safe_scan_string("Введите ID письма для удаления: ", mail_id, sizeof(mail_id)) != SUCCESS || validate_mail_id(mail_id) != SUCCESS) continue;
-
-                String* mail_id_str = create_string(mail_id);
-                if (post_delete_mail(post, mail_id_str) == SUCCESS) {
-                    printf("Письмо успешно удалено.\n");
-                } else {
-                    printf("Ошибка: письмо с таким ID не найдено.\n");
-                }
-                delete_string(mail_id_str);
-
-                break;
-            }
-            case 3: {
-                // Показать все письма
-                printf("\n--- Список писем ---\n");
+            case 3: { // show all mails
+                printf("\n--- Список посылок ---\n");
                 for (int i = 0; i < post->mails_size; i++) {
-                    printf("Письмо %d:\n", i + 1);
+                    printf("Послыка %d:\n", i + 1);
                     printf("  Город: %s\n", post->mails[i].address.town->text);
                     printf("  Улица: %s\n", post->mails[i].address.street->text);
                     printf("  Дом: %d\n", post->mails[i].address.house);
                     printf("  Корпус: %s\n", post->mails[i].address.building->text);
                     printf("  Квартира: %d\n", post->mails[i].address.apartment);
-                    printf("  Индекс: %s\n", post->mails[i].address.index->text);
-                    printf("  Вес: %.2f\n", post->mails[i].weight);
+                    printf("  Индекс получателя: %s\n", post->mails[i].address.index->text);
+                    printf("  Вес послыки: %.2f\n", post->mails[i].weight);
                     printf("  ID: %s\n", post->mails[i].mail_id->text);
                     printf("  Время создания: %s\n", post->mails[i].mail_created_time->text);
                     printf("  Время вручения: %s\n", post->mails[i].mail_received_time->text);
@@ -529,8 +563,8 @@ int main(){
             default:
                 printf("Ошибка: некорректный выбор. Пожалуйста, попробуйте снова.\n");
         }
-    } while (choice != 4);
+    } while (command != 4);
 
-
+    delete_post(post);
     return 0;
 }
