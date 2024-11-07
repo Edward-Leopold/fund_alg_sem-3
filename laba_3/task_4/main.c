@@ -197,10 +197,13 @@ Mail* create_mail(Address *addr, double weight, char* mail_id, String* mail_crea
     return mail;
 }
 
-errCodes validte_mail_id(const char* id){
+errCodes validte_mail_id(const Post* post, const char* id){
     if (strlen(id) != 14) return MAIL_ID_ERR;   
     for (int i = 0; i < 14; i++){
         if (!isdigit(id[i])) return MAIL_ID_ERR; 
+    }
+    for (int j = 0; j < post->mails_size; j++){
+        if (strcmp(post->mails[j].mail_id->text, id) == 0) return MAIL_ID_ERR;
     }
 
     return SUCCESS;
@@ -327,6 +330,24 @@ errCodes post_delete_mail(Post* post, char* mail_id) {
     return SUCCESS;
 }
 
+errCodes search_mail_by_id(Post* post, char* mail_id, Mail* found){
+    String* mail_id_str = create_string(mail_id);
+    if (!mail_id_str) return MALLOC_ERR;
+
+    int index = -1;
+    for (int i = 0; i < post->mails_size; i++) {
+        if (compare_strings(post->mails[i].mail_id, mail_id_str) == 0) {
+            index = i;
+            break;
+        }
+    }
+    delete_string(mail_id_str);
+    if (index == -1) return MAIL_NOT_FOUND;
+
+    *found = post->mails[index];
+    return SUCCESS;
+}
+
 
 int main(){
     Address *addr = create_adress("Moscow", "Lenina", 34, "1", 232, "370024");
@@ -341,13 +362,119 @@ int main(){
         return 1;
     }
 
+    // adding initial mails 
+    struct tm* init_tm_t1 = NULL;
+    struct tm* init_tm_t2 = NULL;
+    errCodes parse_init_time_1 = parse_time("01:01:2024 09:00:00", &init_tm_t1);
+    if (parse_init_time_1 != SUCCESS){
+        printf("Error creating first timestamp\n");
+        delete_post(post);
+        return 1;
+    }
+    errCodes parse_init_time_2 = parse_time("02:01:2024 17:00:00", &init_tm_t2);
+    if (parse_init_time_2 != SUCCESS){
+        printf("Error creating second timestamp\n");
+        free(init_tm_t1);
+        delete_post(post);
+        return 1;
+    }
+    String *init_created_time_str = stringify_time(init_tm_t1);
+    if (!init_created_time_str){
+        printf("Error creating first time string!\n");
+        free(init_tm_t1);
+        free(init_tm_t2);
+        delete_post(post);
+        return 1;
+    }
+    String *init_received_time_str = stringify_time(init_tm_t2);
+    if (!init_received_time_str){
+        printf("Error creating second time string!\n");
+        delete_string(init_created_time_str);
+        free(init_tm_t1);
+        free(init_tm_t2);
+        delete_post(post);
+        return 1;
+    }
+    free(init_tm_t1);
+    free(init_tm_t2);
+
+    Mail *mail1 = create_mail(addr, 1.5, "12345888901234", init_created_time_str, init_received_time_str);
+    if (!mail1) {
+        printf("Error creating first mail\n");
+        delete_string(init_created_time_str);
+        delete_string(init_received_time_str);
+        delete_post(post);
+        return 1;
+    }
+
+    Mail *mail2 = create_mail(addr, 2.0, "23456789012345", init_created_time_str, init_received_time_str);
+    if (!mail2) {
+        printf("Error creating second mail\n");
+        delete_string(init_created_time_str);
+        delete_string(init_received_time_str);
+        delete_mail(mail1);
+        delete_post(post);
+        return 1;
+    }
+
+    Mail *mail3 = create_mail(addr, 2.7, "34567890123456", init_created_time_str, init_received_time_str);
+    if (!mail3) {
+        printf("Error creating third mail\n");
+        delete_string(init_created_time_str);
+        delete_string(init_received_time_str);
+        delete_mail(mail1);
+        delete_mail(mail2);
+        delete_post(post);
+        return 1;
+    }
+    
+    delete_string(init_created_time_str);
+    delete_string(init_received_time_str);
+
+    errCodes post_add_mail_status1 = post_add_mail(post, mail1);
+    if (post_add_mail_status1 != SUCCESS) {
+        printf("Error adding first initial mail to post\n");
+        delete_mail(mail1);
+        delete_mail(mail2);
+        delete_mail(mail3);
+        delete_post(post);
+        return 1;
+    }
+
+    errCodes post_add_mail_status2 = post_add_mail(post, mail2);
+    if (post_add_mail_status2 != SUCCESS) {
+        printf("Error adding second initial mail to post\n");
+        delete_mail(mail1);
+        delete_mail(mail2);
+        delete_mail(mail3);
+        delete_post(post);
+        return 1;
+    }
+
+    errCodes post_add_mail_status3 = post_add_mail(post, mail3);
+    if (post_add_mail_status3 != SUCCESS) {
+        printf("Error adding third initial mail to post\n");
+        delete_mail(mail1);
+        delete_mail(mail2);
+        delete_mail(mail3);
+        delete_post(post);
+        return 1;
+    }
+
+    delete_mail(mail1);
+    delete_mail(mail2);
+    delete_mail(mail3);
+    // end of adding initial mails 
+
+
     int command;
     do {
         printf("\n--- Почтовое меню ---\n");
         printf("1. Добавить посылку\n");
         printf("2. Удалить посылку\n");
         printf("3. Показать все посылки\n");
-        printf("4. Выход\n");
+        printf("4. Поиск посылки по id\n");
+        printf("0. Выход\n");
         printf("Выберите опцию: ");
         if (scanf("%d", &command) != 1) {
             printf("Ошибка: неверный ввод для выбора опции.\n");
@@ -370,7 +497,7 @@ int main(){
                     while (getchar() != '\n');
                 }
                 while (getchar() != '\n');
-                
+
 
                 while (1) {
                     printf("Введите улицу: ");
@@ -432,7 +559,7 @@ int main(){
 
                 while (1) {
                     printf("Введите ID письма: ");
-                    if (scanf("%99s", mail_id) == 1 && validte_mail_id(mail_id) == SUCCESS) break;
+                    if (scanf("%99s", mail_id) == 1 && validte_mail_id(post, mail_id) == SUCCESS) break;
                     printf("Неверный идентификатор посылки (должно быть 14 цифр).\n");
                     while (getchar() != '\n');
                 }
@@ -445,20 +572,16 @@ int main(){
                     
                     if (fgets(created_time, buf_size, stdin) == NULL || parse_time(created_time, &tm_t1) != SUCCESS) {
                         printf("Ошибка задания времени создания послыки.\n");
-                        // while (getchar() != '\n');
                         continue;
                     }
-                    // while (getchar() != '\n');
 
                     printf("Введите время вручения (dd:MM:yyyy hh:mm:ss): ");
                     if (fgets(received_time, buf_size, stdin) == NULL || parse_time(received_time, &tm_t2) != SUCCESS) {
                         printf("Ошибка задания времени получения послыки.\n");
                         free(tm_t1);
                         tm_t1 = NULL;
-                        // while (getchar() != '\n');
                         continue;
                     }
-                    // while (getchar() != '\n');
 
                     if (compare_time(tm_t1, tm_t2) == SUCCESS) break; // compare time (must be t1 < t2)
                     printf("Время отправки должно быть меньше времени получения!\n");
@@ -535,13 +658,13 @@ int main(){
                         printf("Не удалось выделить память для строки id\n");
                         break;
                     case MAIL_NOT_FOUND:
-                        printf("Письмо с id %s не найдено\n", mail_id);
+                        printf("Посылка с id %s не найдено\n", mail_id);
                         break;
                     default:
                         break;
                     }
                 } else{
-                    printf("Письмо с id %s успешно удалено \n", mail_id);
+                    printf("Посылка с id %s успешно удалено \n", mail_id);
                 }
 
                 break;
@@ -563,13 +686,52 @@ int main(){
                 }
                 break;
             }
-            case 4:
+            case 4: { // search mail by id
+                char mail_search_id[STR_FIELD_SIZE];
+                printf("Введите id посылки: ");
+                if (scanf("%99s", mail_search_id) != 1) {
+                    printf("Неверный формат id.\n");
+                    while (getchar() != '\n');
+                    continue; 
+                }
+                while (getchar() != '\n');
+                
+                Mail found_mail;
+                errCodes search_mail_by_id_status = search_mail_by_id(post, mail_search_id, &found_mail);
+                if(search_mail_by_id_status != SUCCESS){
+                    switch (search_mail_by_id_status){
+                    case MALLOC_ERR:
+                        printf("Не удалось выделить память для строки id\n");
+                        break;
+                    case MAIL_NOT_FOUND:
+                        printf("Посылка с id %s не найдено\n", mail_search_id);
+                        break;
+                    default:
+                        break;
+                    }
+                } else{
+                    printf("Посылка с id %s найдено \n", mail_search_id);
+                    printf("  Город: %s\n", found_mail.address.town->text);
+                    printf("  Улица: %s\n", found_mail.address.street->text);
+                    printf("  Дом: %d\n", found_mail.address.house);
+                    printf("  Корпус: %s\n", found_mail.address.building->text);
+                    printf("  Квартира: %d\n", found_mail.address.apartment);
+                    printf("  Индекс получателя: %s\n", found_mail.address.index->text);
+                    printf("  Вес послыки: %.2f\n", found_mail.weight);
+                    printf("  ID: %s\n", found_mail.mail_id->text);
+                    printf("  Время создания: %s\n", found_mail.mail_created_time->text);
+                    printf("  Время вручения: %s\n", found_mail.mail_received_time->text);
+                }
+
+                break;
+            }
+            case 0:
                 printf("Выход из программы.\n");
                 break;
             default:
                 printf("Ошибка: некорректный выбор. Пожалуйста, попробуйте снова.\n");
         }
-    } while (command != 4);
+    } while (command != 0);
 
     delete_post(post);
     return 0;
