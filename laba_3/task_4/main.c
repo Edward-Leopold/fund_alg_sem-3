@@ -83,6 +83,17 @@ errCodes parse_time(const char* datetime, struct tm** timestruct){
         return DATE_FORMAT_ERR;
     }
 
+    // date must be in range of 1980 and 2050
+    struct tm* validated_time = localtime(&timestamp);
+    if (!validated_time){
+        free(ts);
+        return DATE_FORMAT_ERR;
+    }
+    if (validated_time->tm_year + 1900 < 1980 || validated_time->tm_year + 1900 > 2050) {
+        free(ts);
+        return DATE_FORMAT_ERR;
+    }
+
     *timestruct = ts;
 
     return SUCCESS;
@@ -352,115 +363,109 @@ int main(){
                 double weight;
                 
                 // receiving data
-                printf("Введите город: ");
-                if (scanf("%99s", town) != 1) {
+                while (1) {
+                    printf("Введите город: ");
+                    if (scanf("%99s", town) == 1 && strlen(town) > 0) break;
                     printf("Неверный ввод для города.\n");
                     while (getchar() != '\n');
-                    continue; 
-                } 
+                }
+                while (getchar() != '\n');
+                
 
-                printf("Введите улицу: ");
-                if (scanf("%99s", street) != 1) {
+                while (1) {
+                    printf("Введите улицу: ");
+                    if (scanf("%99s", street) == 1 && strlen(street) > 0) break;
                     printf("Неверный ввод для улицы.\n");
                     while (getchar() != '\n');
-                    continue; 
-                } 
-
-                printf("Введите номер дома: ");
-                if (scanf("%d", &house) != 1) {
-                    printf("Неверный ввод для номера дома.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите корпус: ");
-                if (scanf("%99s", building) != 1) {
-                    printf("Неверный ввод для корпуса.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите номер квартиры: ");
-                if (scanf("%d", &apartment) != 1) {
-                    printf("Неверный ввод для номера квартиры.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите индекс получателя: ");
-                if (scanf("%99s", index) != 1) {
-                    printf("Неверный ввод для индекса.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите вес послыки: ");
-                if (scanf("%lf", &weight) != 1) {
-                    printf("Неверный ввод веса послыки.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите ID письма: ");
-                if (scanf("%99s", mail_id) != 1) {
-                    printf("Неверный ввод для ID письма.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите время создания (dd:MM:yyyy hh:mm:ss): ");
-                if (scanf("%99s", created_time) != 1) {
-                    printf("Неверный ввод для времени создания.\n");
-                    while (getchar() != '\n');
-                    continue;  
-                }  
-
-                printf("Введите время вручения (dd:MM:yyyy hh:mm:ss): ");
-                if (scanf("%99s", received_time) != 1) {
-                    printf("Неверный ввод для времени вручения.\n");
-                    while (getchar() != '\n');
-                    continue;  
                 }
                 while (getchar() != '\n');
 
-                // validating data
-                errCodes date_status = validate_address(town, street, house, building, apartment, index); //valiidate address
-                if (date_status != SUCCESS) {
-                    printf("Неверный данные для даты.\n");
-                    continue; 
+                while (1) {
+                    printf("Введите номер дома: ");
+                    if (scanf("%d", &house) == 1 && house > 0) break;
+                    printf("Неверный ввод для номера дома.\n");
+                    while (getchar() != '\n');
                 }
+                while (getchar() != '\n');
 
-                if (!isfinite(weight)){ // validate weight
+
+                while (1) {
+                    printf("Введите корпус: ");
+                    if (scanf("%99s", building) == 1 && strlen(building) > 0) break;
+                    printf("Неверный ввод для корпуса.\n");
+                    while (getchar() != '\n');
+                }
+                while (getchar() != '\n');
+
+                while (1) {
+                    printf("Введите номер квартиры: ");
+                    if (scanf("%d", &apartment) == 1 && apartment > 0) break;
+                    printf("Неверный ввод для номера квартиры.\n");
+                    while (getchar() != '\n');
+                }
+                while (getchar() != '\n');
+
+                while (1) {
+                    printf("Введите индекс получателя: ");
+                    if (scanf("%99s", index) == 1 && strlen(index) == 6) {
+                        int valid = 1;
+                        for (int i = 0; i < 6; i++) {
+                            if (!isdigit(index[i])) {
+                                valid = 0;
+                                break;
+                            }
+                        }
+                        if (valid) break;
+                    }
+                    printf("Неверный ввод для индекса (должен содержать 6 цифр).\n");
+                    while (getchar() != '\n');
+                }
+                while (getchar() != '\n');
+
+                while (1) {
+                    printf("Введите вес послыки: ");
+                    if (scanf("%lf", &weight) == 1 && isfinite(weight)) break;
                     printf("Некорректный вес посылки.\n");
-                    continue; 
+                    while (getchar() != '\n');
                 }
+                while (getchar() != '\n');
 
-                errCodes mail_id_status = validte_mail_id(mail_id); //validate mail_id
-                if (mail_id_status != SUCCESS) {
+                while (1) {
+                    printf("Введите ID письма: ");
+                    if (scanf("%99s", mail_id) == 1 && validte_mail_id(mail_id) == SUCCESS) break;
                     printf("Неверный идентификатор посылки (должно быть 14 цифр).\n");
-                    continue; 
+                    while (getchar() != '\n');
                 }
+                while (getchar() != '\n');
 
-                struct tm* tm_t1 = NULL; // validate time
+                struct tm* tm_t1 = NULL;
                 struct tm* tm_t2 = NULL;
-                errCodes tm_t1_status = parse_time(created_time, &tm_t1);
-                if (tm_t1_status != SUCCESS) {
-                    printf("Ошибка задания времени создания послыки\n");
-                    continue; 
-                }
-                errCodes tm_t2_status = parse_time(received_time, &tm_t2);
-                if (tm_t2_status != SUCCESS) {
-                    printf("Ошибка задания времени отправки послыки\n");
-                    free(tm_t1);
-                    continue; 
-                }
+                while (1) {
+                    printf("Введите время создания (dd:MM:yyyy hh:mm:ss): ");
+                    
+                    if (fgets(created_time, buf_size, stdin) == NULL || parse_time(created_time, &tm_t1) != SUCCESS) {
+                        printf("Ошибка задания времени создания послыки.\n");
+                        // while (getchar() != '\n');
+                        continue;
+                    }
+                    // while (getchar() != '\n');
 
-                errCodes time_compare_status = compare_time(tm_t1, tm_t2); // compare time (must be t1 < t2)
-                if (time_compare_status != SUCCESS) {
+                    printf("Введите время вручения (dd:MM:yyyy hh:mm:ss): ");
+                    if (fgets(received_time, buf_size, stdin) == NULL || parse_time(received_time, &tm_t2) != SUCCESS) {
+                        printf("Ошибка задания времени получения послыки.\n");
+                        free(tm_t1);
+                        tm_t1 = NULL;
+                        // while (getchar() != '\n');
+                        continue;
+                    }
+                    // while (getchar() != '\n');
+
+                    if (compare_time(tm_t1, tm_t2) == SUCCESS) break; // compare time (must be t1 < t2)
                     printf("Время отправки должно быть меньше времени получения!\n");
                     free(tm_t1);
                     free(tm_t2);
-                    continue; 
+                    tm_t1 = NULL;
+                    tm_t2 = NULL;
                 }
 
                 // creating structures 
@@ -510,6 +515,7 @@ int main(){
                     continue;
                 }
                 delete_mail(mail);
+                printf("Посылка успешно добавлена!\n");
                 break;
             }
             case 2: { // delete mail
