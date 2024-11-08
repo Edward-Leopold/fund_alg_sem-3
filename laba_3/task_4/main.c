@@ -26,8 +26,6 @@ typedef struct Address{
 	String* index;
 }Address;
 
-// Address *addr
-// Mail.addres = *addr;
 typedef struct Mail{
     Address address;
     double weight;
@@ -44,7 +42,7 @@ typedef struct Post{
 }Post;
 
 
-// func for time 
+// funcs for time 
 String* stringify_time(const struct tm* timestruct){
     char buffer[32];
     int sprintf_status = sprintf(buffer, "%02d:%02d:%04d %02d:%02d:%02d",
@@ -348,6 +346,23 @@ errCodes search_mail_by_id(Post* post, char* mail_id, Mail* found){
     return SUCCESS;
 }
 
+// sorting in order of indexes
+
+int comparator_indexes(const void *a, const void *b){
+    const Mail* mail_a = (const Mail*)a;
+    const Mail* mail_b = (const Mail*)b;
+
+    int res = compare_strings(mail_a->address.index, mail_b->address.index);
+    if (res != 0) return res;
+
+    return compare_strings(mail_a->mail_id, mail_b->mail_id);
+}
+
+void sort_mails_by_indexes(Post *post){
+    qsort(post->mails, post->mails_size, sizeof(Mail), comparator_indexes);
+    return;
+}
+
 
 int main(){
     Address *addr = create_adress("Moscow", "Lenina", 34, "1", 232, "370024");
@@ -398,7 +413,7 @@ int main(){
     free(init_tm_t1);
     free(init_tm_t2);
 
-    Mail *mail1 = create_mail(addr, 1.5, "12345888901234", init_created_time_str, init_received_time_str);
+    Mail *mail1 = create_mail(addr, 1.5, "23456789012345", init_created_time_str, init_received_time_str);
     if (!mail1) {
         printf("Error creating first mail\n");
         delete_string(init_created_time_str);
@@ -407,7 +422,7 @@ int main(){
         return 1;
     }
 
-    Mail *mail2 = create_mail(addr, 2.0, "23456789012345", init_created_time_str, init_received_time_str);
+    Mail *mail2 = create_mail(addr, 2.0, "12345888901234", init_created_time_str, init_received_time_str);
     if (!mail2) {
         printf("Error creating second mail\n");
         delete_string(init_created_time_str);
@@ -466,6 +481,7 @@ int main(){
     delete_mail(mail3);
     // end of adding initial mails 
 
+    sort_mails_by_indexes(post);
 
     int command;
     do {
@@ -638,7 +654,9 @@ int main(){
                     continue;
                 }
                 delete_mail(mail);
+
                 printf("Посылка успешно добавлена!\n");
+                sort_mails_by_indexes(post);
                 break;
             }
             case 2: { // delete mail
@@ -667,6 +685,7 @@ int main(){
                     printf("Посылка с id %s успешно удалено \n", mail_id);
                 }
 
+                sort_mails_by_indexes(post);
                 break;
             }
             case 3: { // show all mails
