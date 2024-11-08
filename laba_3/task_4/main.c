@@ -347,7 +347,6 @@ errCodes search_mail_by_id(Post* post, char* mail_id, Mail* found){
 }
 
 // sorting in order of indexes
-
 int comparator_indexes(const void *a, const void *b){
     const Mail* mail_a = (const Mail*)a;
     const Mail* mail_b = (const Mail*)b;
@@ -361,6 +360,110 @@ int comparator_indexes(const void *a, const void *b){
 void sort_mails_by_indexes(Post *post){
     qsort(post->mails, post->mails_size, sizeof(Mail), comparator_indexes);
     return;
+}
+
+// find delivered and expired mails
+int compare_created_times(const void* a, const void* b) {
+    Mail* mail_a = *(Mail**)a;
+    Mail* mail_b = *(Mail**)b;
+
+    return strcmp(mail_a->mail_created_time->text, mail_b->mail_created_time->text);
+}
+
+errCodes delivered_mails(Post* post, Mail*** result){
+    int capacity = 10;
+    int cnt = 0; 
+    Mail** found = (Mail**)malloc(sizeof(Mail*) * (capacity + 1));
+
+    time_t curtime = time(NULL);
+
+    for (int i = 0; i < post->mails_size; i++){
+        if (cnt == capacity){
+            capacity *= 2;
+            Mail** temp = realloc(found, sizeof(Mail*) * (capacity + 1));
+            if (!temp){
+                free(found);
+                return REALLOC_ERR;
+            }
+            found = temp;
+        }
+
+        struct tm* received_time_tm = NULL;
+        errCodes parse_status = parse_time(post->mails[i].mail_received_time->text, &received_time_tm);
+        if (parse_status != SUCCESS) {
+            free(found);
+            return parse_status;
+        }
+
+        time_t received_time = mktime(received_time_tm);
+        free(received_time_tm);
+        if (received_time == -1){
+            free(found);
+            return MALLOC_ERR;
+        }
+
+        if (difftime(curtime, received_time) > 0) {
+            found[cnt] = &post->mails[i];
+            cnt++;
+        }
+    }
+    found[cnt] = NULL;
+    *result = found;
+
+    if (cnt != 0) {
+        qsort(*result, cnt, sizeof(Mail*), compare_created_times);
+    }
+
+    return SUCCESS;
+}
+
+errCodes expired_mails(Post* post, Mail*** result) {
+    int capacity = 10;
+    int cnt = 0;
+    Mail** found = (Mail**)malloc(sizeof(Mail*) * (capacity + 1));
+    if (!found) return MALLOC_ERR;
+
+    time_t curtime = time(NULL);
+
+    for (int i = 0; i < post->mails_size; i++) {
+        if (cnt == capacity) {
+            capacity *= 2;
+            Mail** temp = realloc(found, sizeof(Mail*) * (capacity + 1));
+            if (!temp) {
+                free(found);
+                return REALLOC_ERR;
+            }
+            found = temp;
+        }
+
+        struct tm* received_time_tm = NULL;
+        errCodes parse_status = parse_time(post->mails[i].mail_received_time->text, &received_time_tm);
+        if (parse_status != SUCCESS) {
+            free(found);
+            return parse_status;
+        }
+
+        time_t received_time = mktime(received_time_tm);
+        free(received_time_tm);
+        if (received_time == -1) {
+            free(found);
+            return MALLOC_ERR;
+        }
+
+        if (difftime(received_time, curtime) > 0) { 
+            found[cnt] = &post->mails[i];
+            cnt++;
+        }
+    }
+
+    found[cnt] = NULL; 
+    *result = found;
+
+    if (cnt > 1) {
+        qsort(*result, cnt, sizeof(Mail*), compare_created_times);
+    }
+
+    return SUCCESS;
 }
 
 
@@ -490,6 +593,8 @@ int main(){
         printf("2. Удалить посылку\n");
         printf("3. Показать все посылки\n");
         printf("4. Поиск посылки по id\n");
+        printf("5. Показать все доставленные посылки\n");
+        printf("6. Показать все недоставленные посылки\n");
         printf("0. Выход\n");
         printf("Выберите опцию: ");
         if (scanf("%d", &command) != 1) {
@@ -744,6 +849,58 @@ int main(){
 
                 break;
             }
+            case 5: { // print delivered mails in order of creation
+                Mail **delivered = NULL;
+                errCodes delivered_status = delivered_mails(post, &delivered);
+                if (delivered_status != SUCCESS){
+                    printf("Не удалось выделить память для вывода и сортировки доставленных писем\n");
+                    break;
+                }
+
+                printf("Посылки доставленные на текущий момент\n");
+                for(int i = 0; delivered[i]; i++){
+                    printf("Послыка %d:\n", i + 1);
+                    printf("  Город: %s\n", delivered[i]->address.town->text);
+                    printf("  Улица: %s\n", delivered[i]->address.street->text);
+                    printf("  Дом: %d\n", delivered[i]->address.house);
+                    printf("  Корпус: %s\n", delivered[i]->address.building->text);
+                    printf("  Квартира: %d\n", delivered[i]->address.apartment);
+                    printf("  Индекс получателя: %s\n", delivered[i]->address.index->text);
+                    printf("  Вес послыки: %.2f\n", delivered[i]->weight);
+                    printf("  ID: %s\n", delivered[i]->mail_id->text);
+                    printf("  Время создания: %s\n", delivered[i]->mail_created_time->text);
+                    printf("  Время вручения: %s\n", delivered[i]->mail_received_time->text);
+                }
+                free(delivered);
+
+                break;
+            }
+            case 6: { // print exired mails in order of creation
+                Mail **expired = NULL;
+                errCodes expired_status = expired_mails(post, &expired);
+                if (expired_status != SUCCESS){
+                    printf("Не удалось выделить память для вывода и сортировки недоставленных посылок\n");
+                    break;
+                }
+
+                printf("Посылки недоставленные на текущий момент\n");
+                for(int i = 0; expired[i]; i++){
+                    printf("Посылка %d:\n", i + 1);
+                    printf("  Город: %s\n", expired[i]->address.town->text);
+                    printf("  Улица: %s\n", expired[i]->address.street->text);
+                    printf("  Дом: %d\n", expired[i]->address.house);
+                    printf("  Корпус: %s\n", expired[i]->address.building->text);
+                    printf("  Квартира: %d\n", expired[i]->address.apartment);
+                    printf("  Индекс получателя: %s\n", expired[i]->address.index->text);
+                    printf("  Вес послыки: %.2f\n", expired[i]->weight);
+                    printf("  ID: %s\n", expired[i]->mail_id->text);
+                    printf("  Время создания: %s\n", expired[i]->mail_created_time->text);
+                    printf("  Время вручения: %s\n", expired[i]->mail_received_time->text);
+                }
+                free(expired);
+
+                break;
+            } 
             case 0:
                 printf("Выход из программы.\n");
                 break;
