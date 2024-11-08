@@ -263,7 +263,6 @@ errCodes read_file_to_list(const char* filename, Node** head) {
 }
 
 
-// Function to search for residents based on parameters
 Node* search_livers(Node* head, const char* surname, const char* name, const char* patronymic){
     Node* current = head;
     while(current){
@@ -277,7 +276,6 @@ Node* search_livers(Node* head, const char* surname, const char* name, const cha
     return NULL;
 }
 
-// Function to export list to file
 errCodes export_list_to_file(Node* head, const char* filename){
     FILE* file = fopen(filename, "w");
     if(!file) return DATE_FORMAT_ERR;
@@ -298,7 +296,6 @@ errCodes export_list_to_file(Node* head, const char* filename){
     return SUCCESS;
 }
 
-// Function to free the entire list
 void free_list(Node* head){
     while(head){
         Node* temp = head;
@@ -434,7 +431,7 @@ int main(){
                 printf("Житель успешно добавлен.\n");
                 break;
             }
-            case 2: { // Удалить жителя
+            case 2: { 
                 char surname[STR_FIELD_SIZE], name[STR_FIELD_SIZE], patronymic[STR_FIELD_SIZE];
                 printf("Введите фамилию жителя для удаления: ");
                 if(scanf("%99s", surname) != 1){
@@ -483,7 +480,7 @@ int main(){
                 printf("Житель успешно удален.\n");
                 break;
             }
-            case 3: { // Изменить жителя
+            case 3: { 
                 char surname[STR_FIELD_SIZE], name[STR_FIELD_SIZE], patronymic[STR_FIELD_SIZE];
                 printf("Введите фамилию жителя для изменения: ");
                 if(scanf("%99s", surname) != 1){
@@ -612,7 +609,7 @@ int main(){
                 printf("Житель успешно изменен.\n");
                 break;
             }
-            case 4: { // Показать всех жителей
+            case 4: { 
                 Node* current = head;
                 int count = 1;
                 while(current){
@@ -630,7 +627,7 @@ int main(){
                 }
                 break;
             }
-            case 5: { // Поиск жителя
+            case 5: { 
                 char surname[STR_FIELD_SIZE], name[STR_FIELD_SIZE], patronymic[STR_FIELD_SIZE];
                 printf("Введите фамилию жителя для поиска: ");
                 if(scanf("%99s", surname) != 1){
@@ -671,7 +668,7 @@ int main(){
                 }
                 break;
             }
-            case 6: { // Экспортировать данные в файл
+            case 6: { 
                 char output_filename[STR_FIELD_SIZE];
                 printf("Введите имя выходного файла: ");
                 if(scanf("%99s", output_filename) != 1){
