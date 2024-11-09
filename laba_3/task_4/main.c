@@ -599,7 +599,7 @@ int main(){
         printf("Выберите опцию: ");
         if (scanf("%d", &command) != 1) {
             printf("Ошибка: неверный ввод для выбора опции.\n");
-            while (getchar() != '\n'); // очистка буфера
+            while (getchar() != '\n');
             continue;
         }
 
