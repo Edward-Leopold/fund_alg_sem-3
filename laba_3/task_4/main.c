@@ -417,7 +417,7 @@ errCodes delivered_mails(Post* post, Mail*** result){
     return SUCCESS;
 }
 
-errCodes expired_mails(Post* post, Mail*** result) {
+errCodes not_delivered_mails(Post* post, Mail*** result) {
     int capacity = 10;
     int cnt = 0;
     Mail** found = (Mail**)malloc(sizeof(Mail*) * (capacity + 1));
@@ -875,9 +875,9 @@ int main(){
 
                 break;
             }
-            case 6: { // print exired mails in order of creation
+            case 6: { // print not delivered mails in order of creation
                 Mail **expired = NULL;
-                errCodes expired_status = expired_mails(post, &expired);
+                errCodes expired_status = not_delivered_mails(post, &expired);
                 if (expired_status != SUCCESS){
                     printf("Не удалось выделить память для вывода и сортировки недоставленных посылок\n");
                     break;
