@@ -75,7 +75,7 @@ errCodes parse_time(const char* datetime, struct tm** timestruct){
     if ((year > 2050 || year < 1980) || (month < 0 || month > 12)) return DATE_FORMAT_ERR;
     if (day < 0 || day > day_of_month(month, year)) return DATE_FORMAT_ERR;
 
-    struct tm* ts = malloc(sizeof(struct tm));
+    struct tm* ts = (struct tm*)malloc(sizeof(struct tm));
     if (!ts) return MALLOC_ERR;
 
     ts->tm_mday = day;
@@ -131,7 +131,7 @@ void delete_address(Address *addr){
 }
 
 Address* create_adress(char* town, char* street, int house, char* building, int apartment, char* index){
-    Address* addr = malloc(sizeof(Address));
+    Address* addr = (Address*)malloc(sizeof(Address));
     if (!addr) return NULL;
 
     addr->town = create_string(town);
@@ -178,7 +178,7 @@ void delete_mail(Mail *mail){
 }
 
 Mail* create_mail(Address *addr, double weight, char* mail_id, String* mail_created_time, String* mail_received_time){
-    Mail* mail = malloc(sizeof(Mail));
+    Mail* mail = (Mail*)malloc(sizeof(Mail));
     if (!mail) return NULL;
 
     String *mail_id_s = create_string(mail_id);
@@ -222,14 +222,14 @@ errCodes validte_mail_id(const Post* post, const char* id){
 
 // func for post
 Post* create_post(Address *addr){
-    Post* post = malloc(sizeof(Post));
+    Post* post = (Post*)malloc(sizeof(Post));
     if (!post) return NULL;
 
     post->address = addr;
     post->mem_size = 10;
     post->mails_size = 0;
 
-    post->mails = malloc(sizeof(Mail) * (post->mem_size + 1));
+    post->mails = (Mail*)malloc(sizeof(Mail) * (post->mem_size + 1));
     if (!post->mails) {
         free(post);
         return NULL;
@@ -298,7 +298,7 @@ errCodes post_add_mail(Post* post, Mail* mail){
 
     if (post->mails_size == post->mem_size){
         post->mem_size *= 2;
-        Mail* temp = realloc(post->mails, sizeof(Mail) * (post->mem_size + 1));
+        Mail* temp = (Mail*)realloc(post->mails, sizeof(Mail) * (post->mem_size + 1));
         if (!temp) {
             delete_string(copied_mail.mail_id);
             delete_string(copied_mail.mail_created_time);
@@ -393,7 +393,7 @@ errCodes delivered_mails(Post* post, Mail*** result){
     for (int i = 0; i < post->mails_size; i++){
         if (cnt == capacity){
             capacity *= 2;
-            Mail** temp = realloc(found, sizeof(Mail*) * (capacity + 1));
+            Mail** temp = (Mail**)realloc(found, sizeof(Mail*) * (capacity + 1));
             if (!temp){
                 free(found);
                 return REALLOC_ERR;
@@ -441,7 +441,7 @@ errCodes not_delivered_mails(Post* post, Mail*** result) {
     for (int i = 0; i < post->mails_size; i++) {
         if (cnt == capacity) {
             capacity *= 2;
-            Mail** temp = realloc(found, sizeof(Mail*) * (capacity + 1));
+            Mail** temp = (Mail**)realloc(found, sizeof(Mail*) * (capacity + 1));
             if (!temp) {
                 free(found);
                 return REALLOC_ERR;
