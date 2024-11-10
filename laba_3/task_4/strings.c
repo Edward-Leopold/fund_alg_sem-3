@@ -1,7 +1,7 @@
 #include "strings.h"
 
 String* create_string(char* str){
-    String* string = malloc(sizeof(String));
+    String* string = (String*)malloc(sizeof(String));
     if (!string) return NULL;
 
     string->len = (int)strlen(str);
@@ -55,7 +55,7 @@ int equals_strings(const String* s1, const String* s2){
 }
 
 int copy_stings(String* s1, const String *s2){
-    char* temp = realloc(s1->text, sizeof(char) * (s2->len + 1));
+    char* temp = (char*)realloc(s1->text, sizeof(char) * (s2->len + 1));
     if (!temp){
         return 0;
     }
@@ -70,11 +70,11 @@ int copy_stings(String* s1, const String *s2){
 }
 
 String* copy_new_string(const String* s){
-    String* str = malloc(sizeof(String));
+    String* str = (String*)malloc(sizeof(String));
     if (!str) return NULL;
 
     str->len = s->len;
-    str->text = malloc(sizeof(char) * (str->len + 1));
+    str->text = (char*)malloc(sizeof(char) * (str->len + 1));
     if(!str->text){
         free(str);
         return NULL;
@@ -87,7 +87,7 @@ String* copy_new_string(const String* s){
 }
 
 int concat_strings(String* s1, const String* s2){
-    char* temp = realloc(s1->text, sizeof(char) * (s1->len + s2->len + 1));
+    char* temp = (char*)realloc(s1->text, sizeof(char) * (s1->len + s2->len + 1));
     if (!temp) return 0;
 
     s1->text = temp;

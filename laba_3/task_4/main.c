@@ -56,11 +56,24 @@ String* stringify_time(const struct tm* timestruct){
     return s;
 }
 
+int day_of_month(int month, int year){
+    int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (year % 4 == 0){
+        days[1] = 29;
+        if (year % 100 == 0 && year % 400 != 0) days[1] = 28;
+    } 
+    return days[month - 1];
+}
+
 errCodes parse_time(const char* datetime, struct tm** timestruct){
     int day, month, year, hours, minutes, seconds;
     if (sscanf(datetime, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds) != 6) {
         return DATE_FORMAT_ERR;
     }
+
+    if ((seconds >= 60 || seconds < 0) || (minutes >= 60 || minutes < 0) || (hours >= 24 || hours < 0)) return DATE_FORMAT_ERR;
+    if ((year > 2050 || year < 1980) || (month < 0 || month > 12)) return DATE_FORMAT_ERR;
+    if (day < 0 || day > day_of_month(month, year)) return DATE_FORMAT_ERR;
 
     struct tm* ts = malloc(sizeof(struct tm));
     if (!ts) return MALLOC_ERR;
