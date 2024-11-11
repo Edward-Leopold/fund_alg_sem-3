@@ -624,6 +624,13 @@ int main(int argc, char** argv) {
     
             int option;
             if (scanf("%d", &option) == 1) {
+                if (option == 1) {
+                    printf("yes\n");
+                    write_above_average_students(&students, output);
+                    printf("Info about students with above average grade will be added to trace file after exit\n");
+                } else{
+                    printf("no\n");
+                }
                 double total_average = calculate_total_average(&students);
 
                 printf("\nStudents with above average grade (%.2f):\n", total_average);
@@ -638,9 +645,7 @@ int main(int argc, char** argv) {
                     }
                 }
 
-                if (option == 1) {
-                    write_above_average_students(&students, output);
-                }
+                
             } else {
                 printf("Invalid input.\n");
                 while (getchar() != '\n'); 
