@@ -5,6 +5,8 @@
 #include <limits.h>
 #include <linux/limits.h>
 
+#define HASHSIZE 128
+
 typedef enum errCodes{
     NOT_ENOUGH_ARGUEMENTS,
     TOO_MANY_ARGUEMENTS,
