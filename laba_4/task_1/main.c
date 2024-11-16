@@ -46,7 +46,7 @@ errCodes getArgs(int argc, char** argv, char** filename){
 int main(int argc, char** argv){
     char* filename = NULL;
     errCodes args_status = getArgs(argc, argv, &filename);
-    if (args_status != SUCCESS){
+    if (args_status != SUCCESS){ // handling errors from cli input
         switch (args_status){
         case NOT_ENOUGH_ARGUEMENTS:
             printf("Not enough number of argumnets.\n");
@@ -60,6 +60,7 @@ int main(int argc, char** argv){
         return 1;
     }
 
+    
 
     return 0;
 }
