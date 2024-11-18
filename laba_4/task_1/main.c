@@ -15,6 +15,7 @@ typedef enum errCodes{
     FILE_POS_ERR,
     SAME_FILE_ERR,
     UNABLE_TO_OPEN_FILE,
+    HASH_INSERT_ERR,
 
     SUCCESS
 } errCodes;
@@ -69,6 +70,22 @@ HashItem* create_item(char* key, char* value){
 
 void delete_item(HashItem* item){
     if(item) free(item);
+}
+
+int list_len(HashItem* head){
+    int cnt = 0;
+
+    if (head == NULL){
+        return cnt;
+    }
+    HashItem* cur = head;
+    cnt++;
+    while (cur->next){
+        cnt++;
+        cur = cur->next;
+    }
+
+    return cnt;
 }
 
 void delete_items(HashItem* head){
@@ -128,8 +145,70 @@ void delete_table(HashTable* table){
     }
 }
 
-errCodes insert_table(HashTable* table, char* key, char* value){
-    
+int hash_function(char* key){
+    int num = 0;
+    int len = strlen(key);
+    for (int i = 0; i < len; i++) {
+        if (key[i] >= '0' && key[i] <= '9'){
+            num = num * 62 + key[i] - '0';
+        }
+        else if (key[i] >= 'A' && key[i] <= 'Z'){
+            num = num * 62 + key[i] - 'A' + 10;
+        }
+        else if (key[i] >= 'a' && key[i] <= 'z'){
+            num = num * 62 + key[i] - 'a' + 36;
+        }
+    }
+    return num;
+}
+
+errCodes insert_table(HashTable* table, char* key, char* value, int hash){
+    int index = hash % table->size;
+    HashItem* item = create_item(key, value);
+    if (!item){
+        return MALLOC_ERR;
+    }
+
+    push_item(table->items[index], item);
+    return SUCCESS;
+}
+
+HashTable* refactor_table(HashTable* oldtable, int new_hashsize){
+    HashTable* table = create_table(new_hashsize);
+    if (!table) return NULL;
+
+    for (int i = 0; i < oldtable->size; i++){
+        while(oldtable->items[i]){
+            HashItem* item = pop_item(&(oldtable->items[i]));
+            char* key = item->key;
+            char* value = item->value;
+            delete_item(item);
+            if (insert_table(table, key, value, hash_function(key)) != SUCCESS){
+                delete_table(table);
+                return NULL;
+            }
+        }
+    }
+
+    return table;
+}
+
+int is_need_rebuild(HashTable *table){
+    int max = -1;
+    int min = table->size + 1;
+
+    for (int i = 0; i < table->size; i++){
+        if (table->items[i]){
+            int cur_len = list_len(table->items[i]); 
+            max = (cur_len > max) ? cur_len : max;
+            min = (cur_len < min) ? cur_len : min;  
+        }
+    }
+
+    if (max / min >= 2){
+        return 1;
+    }
+    return 0;
 }
 
 errCodes read_str(FILE* input, char** buffer, int* c){
@@ -210,12 +289,12 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
                 break;
             }
 
-            // Добавляем пару key-value в хэш-таблицу
-            // if (insert(table, key, value, hash_function(key)) != SUCCESS) {
-            //     free(key);
-            //     free(value);
-            //     return HASH_INSERT_ERR;
-            // }
+            // adding key value to hashtable
+            if (insert_table(*table, key, value, hash_function(key)) != SUCCESS) {
+                free(key);
+                free(value);
+                return HASH_INSERT_ERR;
+            }
         } else {
             fseek(file, start_pos, SEEK_SET);
             break;
