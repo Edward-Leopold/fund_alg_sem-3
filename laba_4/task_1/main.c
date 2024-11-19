@@ -148,6 +148,23 @@ void delete_table(HashTable* table){
     }
 }
 
+void print_table(HashTable* table) {
+    if (!table || !table->items) {
+        printf("Hash table is empty or uninitialized.\n");
+        return;
+    }
+
+    for (int i = 0; i < table->size; i++) {
+        printf("Bucket %d:\n", i);
+        HashItem* current = table->items[i];
+        while (current) {
+            printf("  Key: %s, Value: %s\n", current->key, current->value);
+            current = current->next;
+        }
+    }
+}
+
+
 int hash_function(char* key){
     int num = 0;
     int len = strlen(key);
@@ -267,21 +284,23 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
         if (strcmp(str, "#define") == 0) {
             free(str);
             
-            if (read_str(file, &str, c) != SUCCESS) {
+            if (read_str(file, &key, c) != SUCCESS) {
                 free(key);
                 free(value);
                 return MALLOC_ERR;
             }
-            strcpy(key, str); 
-            free(str);
+            // strcpy(key, str); 
+            // key = str;
+            // free(str);
 
-            if (read_str(file, &str, c) != SUCCESS) {
+            if (read_str(file, &value, c) != SUCCESS) {
                 free(key);
                 free(value);
                 return MALLOC_ERR;
             }
-            strcpy(value, str);
-            free(str);
+            // strcpy(value, str);
+            // value = str;
+            // free(str);
 
             *c = fgetc(file);
             while (*c == ' ' || *c == '\t') {
@@ -293,23 +312,30 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
             }
 
             // adding key value to hashtable
+            printf("%s %s\n", key, value);
             if (insert_table(*table, key, value, hash_function(key)) != SUCCESS) {
                 free(key);
                 free(value);
                 return HASH_INSERT_ERR;
             }
+            free(key);
+            free(value);
         } else {
             fseek(file, start_pos, SEEK_SET);
             break;
         }
     }
 
-    free(key);
-    free(value);
+    // free(key);
+    // free(value);
     return SUCCESS;
 }
 
 char* find_value(HashTable* table, char* key) {
+    if (!table || !table->items || !key) {
+        return NULL; // Защита от некорректных указателей
+    }
+
     int index = hash_function(key) % table->size;
     HashItem* current = table->items[index];
     
@@ -322,98 +348,35 @@ char* find_value(HashTable* table, char* key) {
     return NULL; // Значение по ключу не найдено
 }
 
-errCodes process_text(FILE* file, HashTable* table, int* c, FILE* output) {
-    int capacity = 1024; // Начальный размер буфера строки
-    char* buffer = malloc(capacity * sizeof(char));
-    if (!buffer) return MALLOC_ERR;
+errCodes process_text(FILE* file, HashTable* table, FILE* output) {
+    char buffer[1024];
+    while (fgets(buffer, sizeof(buffer), file)) {
+        char* cursor = buffer;
+        while (*cursor) {
+            if (isalnum(*cursor)) {
+                char word[128];
+                int word_idx = 0;
 
-    int idx = 0;
-
-    while ((*c = fgetc(file)) != EOF) {
-        if (isalnum(*c)) {
-            // Начинаем считывать слово
-            int word_capacity = 128, word_idx = 0;
-            char* word = malloc(word_capacity * sizeof(char));
-            if (!word) {
-                free(buffer);
-                return MALLOC_ERR;
-            }
-
-            do {
-                word[word_idx++] = *c;
-                if (word_idx == word_capacity) {
-                    word_capacity *= 2;
-                    char* temp = realloc(word, word_capacity);
-                    if (!temp) {
-                        free(word);
-                        free(buffer);
-                        return REALLOC_ERR;
-                    }
-                    word = temp;
+                while (isalnum(*cursor) && word_idx < sizeof(word) - 1) {
+                    word[word_idx++] = *cursor++;
                 }
-                *c = fgetc(file);
-            } while (*c != EOF && isalnum(*c));
+                word[word_idx] = '\0';
 
-            word[word_idx] = '\0';
-
-            // Проверяем, есть ли замена в хэш-таблице
-            char* replacement = find_value(table, word);
-            const char* to_write = replacement ? replacement : word;
-
-            // Пишем слово в буфер
-            for (int i = 0; to_write[i] != '\0'; i++) {
-                buffer[idx++] = to_write[i];
-                if (idx == capacity) {
-                    capacity *= 2;
-                    char* temp = realloc(buffer, capacity);
-                    if (!temp) {
-                        free(word);
-                        free(buffer);
-                        return REALLOC_ERR;
-                    }
-                    buffer = temp;
+                char* replacement = find_value(table, word);
+                if (replacement) {
+                    fprintf(output, "%s", replacement);
+                } else {
+                    fprintf(output, "%s", word);
                 }
-            }
-
-            free(word);
-
-            // Возвращаем неалфавитный символ обратно в обработку
-            if (*c != EOF) {
-                buffer[idx++] = *c;
-                if (idx == capacity) {
-                    capacity *= 2;
-                    char* temp = realloc(buffer, capacity);
-                    if (!temp) {
-                        free(buffer);
-                        free(word);
-                        return REALLOC_ERR;
-                    }
-                    buffer = temp;
-                }
-            }
-        } else {
-            // Добавляем любые неалфавитные символы, включая пробелы, как есть
-            buffer[idx++] = *c;
-            if (idx == capacity) {
-                capacity *= 2;
-                char* temp = realloc(buffer, capacity);
-                if (!temp) {
-                    free(buffer);
-                    return REALLOC_ERR;
-                }
-                buffer = temp;
+            } else {
+                fputc(*cursor, output);
+                cursor++;
             }
         }
     }
-
-    buffer[idx] = '\0'; // Завершаем строку
-
-    // Пишем весь буфер в выходной файл
-    fprintf(output, "%s", buffer);
-    free(buffer);
-
     return SUCCESS;
 }
+
 
 int main(int argc, char** argv){
     char* filename = NULL;
@@ -431,6 +394,11 @@ int main(int argc, char** argv){
         }
         return 1;
     }
+
+    // char* key = malloc(sizeof(char) * 20);
+    // char* val = malloc(sizeof(char) * 20);
+    // HashItem* it = create_item("key", "value");
+    // printf("%s %s", it->key, it->value);
 
     FILE* file = fopen(filename, "r");
     if (!file){
@@ -462,7 +430,9 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    errCodes process_status = process_text(file, table, &c, output);
+    print_table(table);
+
+    errCodes process_status = process_text(file, table, output);
     if (process_status != SUCCESS) {
         printf("Error processing text. Error code: %d\n", process_status);
         delete_table(table);
