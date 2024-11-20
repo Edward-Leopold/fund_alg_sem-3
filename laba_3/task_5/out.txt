@@ -1,5 +1,2 @@
-Students with above average grade (4.15):
-John Doe, Group: A, Average Grade: 5.00
-Bob Jones, Group: C, Average Grade: 5.00
-Mary Wilson, Group: B, Average Grade: 4.60
-John Doe, Group: A, Average Grade: 5.00
+id: 3, Full name: Bob Jones, Group: C, Average Grade: 5.00
+id: 2, Full name: Alice Smith, Group: B, Average Grade: 4.00
