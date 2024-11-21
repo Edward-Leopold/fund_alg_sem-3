@@ -124,6 +124,31 @@ public:
         return binary_int(res);
     }
 
+    pair<binary_int, binary_int> split_bits() const {
+        int mask = 1;
+        int cnt = 0;
+        while (mask != 0){ // counting num of bits in int
+            cnt = increment(cnt);
+            mask <<= 1;
+        }
+
+        int upper_mask = 1;
+        for (int i = 0; i < decrement(cnt); i = increment(i)){
+            upper_mask <<= 1;
+        }
+        int lower_mask = 1;
+
+        while((upper_mask & lower_mask) == 0){
+            upper_mask |= upper_mask >> 1;
+            lower_mask |= lower_mask << 1;
+        }
+
+        int upper_bits = n & upper_mask;
+        int lower_bits = n & lower_mask;
+
+        return make_pair(binary_int(upper_bits), binary_int(lower_bits));
+    }
+
     int get_val() const{
         return n;
     }
@@ -155,6 +180,11 @@ int main(){
     cout << "b3: " << b3 << "\n";
     cout << "b4: " << b4 << "\n";
 
+
+    binary_int h(131'072 + 1024);
+    pair<binary_int, binary_int> halves = h.split_bits();
+    cout << "Upper half: " << halves.first << endl;
+    cout << "Lower half: " << halves.second << endl;
     
 
     return 0;
