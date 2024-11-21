@@ -1,8 +1,15 @@
 #include <iostream>
+#include <limits>
 
 using namespace std;
 
+const int max_int = numeric_limits<int>::max();
+const int min_int = numeric_limits<int>::min();
+
 int decrement(int num) {
+    if (num == min_int) {
+        throw runtime_error("type int overflow");
+    }
     long int mask = 1;
     while ((num & mask) == 0) {
         num = num ^ mask;
@@ -12,6 +19,9 @@ int decrement(int num) {
 }
 
 int increment(int num) {
+    if (num == max_int) {
+        throw runtime_error("type int overflow");
+    }
     int mask = 1;
     while (num & mask) {
         num = num ^ mask;
@@ -23,8 +33,6 @@ int increment(int num) {
 class binary_int{
 private:
     int n;
-
-    
 
 public:
     binary_int(int val){
@@ -160,32 +168,31 @@ ostream& operator << (ostream &os, const binary_int &b){
 
 
 int main(){
-    // int a = 0;
-    // cout << decrement(0) << "\n";
-    
+    try{
+        binary_int b1(2147483647);
+        binary_int b2(2);
+        binary_int b3 = b1 * b2;
+        binary_int b4(-2);
 
-    binary_int b1(3);
-    binary_int b2(5);
-    binary_int b3 = b1 * b2;
-    binary_int b4(-2);
+        cout << "b1: " << b1 << "\n";
+        cout << "b2: " << b2 << "\n";
+        cout << "b3: " << b3 << "\n";
+        cout << "b4: " << b4 << "\n";
+        b4 *= -b3;
 
-    cout << "b1: " << b1 << "\n";
-    cout << "b2: " << b2 << "\n";
-    cout << "b3: " << b3 << "\n";
-    cout << "b4: " << b4 << "\n";
-    b4 *= -b3;
+        cout << "b1: " << b1 << "\n";
+        cout << "b2: " << b2 << "\n";
+        cout << "b3: " << b3 << "\n";
+        cout << "b4: " << b4 << "\n";
 
-    cout << "b1: " << b1 << "\n";
-    cout << "b2: " << b2 << "\n";
-    cout << "b3: " << b3 << "\n";
-    cout << "b4: " << b4 << "\n";
-
-
-    binary_int h(131'072 + 1024);
-    pair<binary_int, binary_int> halves = h.split_bits();
-    cout << "Upper half: " << halves.first << endl;
-    cout << "Lower half: " << halves.second << endl;
-    
+        binary_int h(131'072 + 1024);
+        pair<binary_int, binary_int> halves = h.split_bits();
+        cout << "Upper half: " << halves.first << endl;
+        cout << "Lower half: " << halves.second << endl;
+    }
+    catch(const exception& e){
+        std::cerr << e.what() << '\n';
+    }    
 
     return 0;
 }
