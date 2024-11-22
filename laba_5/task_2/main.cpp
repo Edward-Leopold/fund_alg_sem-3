@@ -9,9 +9,6 @@ using namespace std;
 class encoder{
 private:
     vector<byte> key;
-    // vector<byte> S;
-    // int x = 0;
-    // int y = 0;
 
     vector<byte> KSA(vector<byte> key){
         vector<byte> S(256);
@@ -25,19 +22,12 @@ private:
             swap(S[i], S[j]);
         }
 
-        for (int i = 0; i < 256; ++i) {
-            cout << to_integer<int>(S[i]) << " ";
-        }
-        cout << endl;
-
         return S;
     }
 
     byte keyItem(vector<byte> &S, int &x, int &y){
         x = (x + 1) % 256;
         y = (y + to_integer<int>(S[x])) % 256;
-
-        cout << "(" << x << " " << y << ") ";
 
         swap(S[x], S[y]);
 
@@ -50,7 +40,7 @@ public:
         this->key = key;
     }
     
-    void encode(const string& filename_in, const string& filename_out, bool flag) {
+    void encode(const string& filename_in, const string& filename_out) {
         ifstream input(filename_in, ios::binary);
         if (!input) {
             throw runtime_error("Failed to open input file.");
@@ -69,15 +59,14 @@ public:
             ch = to_integer<int>(byte(ch) ^ keyItem(S, x, y));           
             output.put(ch);
         }
-        cout << "\n";
     
         input.close();
         output.close();
     }
 
-    // void setKey(vector<byte> new_vec){
-    //     key = new_vec;
-    // }
+    void setKey(vector<byte> new_key){
+        key = new_key;
+    }
 };
 
 
@@ -87,10 +76,15 @@ int main(){
         vector<byte> key = {byte('A'), byte('B'), byte('C')};
         encoder enc(key);
 
-        enc.encode("input.txt", "encrypted.txt", true);
-        cout << "\n";
-        enc.encode("encrypted.txt", "decrypted.txt", false);
-        cout << "Encryption and decryption completed successfully." << endl;
+        enc.encode("input.txt", "encrypted1.txt");
+        enc.encode("encrypted1.txt", "decrypted1.txt");
+        cout << "Encryption and decryption 1 completed successfully." << endl;
+
+        vector<byte> key2 = {byte('G'), byte('O'), byte('O'), byte('O'), byte('O'), byte('O'), byte('L')};
+        enc.setKey(key2);
+        enc.encode("input.txt", "encrypted2.txt");
+        enc.encode("encrypted2.txt", "decrypted2.txt");
+        cout << "Encryption and decryption 2 completed successfully." << endl;
     }
     catch(const exception& e){
         std::cerr << e.what() << '\n';
