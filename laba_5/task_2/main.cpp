@@ -3,8 +3,25 @@
 #include <cstddef>
 #include <string>
 #include <fstream>
+#include <linux/limits.h>
 
 using namespace std;
+
+bool is_same_file(const char *a, const char *b){
+    bool is_same = true;
+    char input_path[PATH_MAX];
+    char output_path[PATH_MAX];
+    realpath(a, input_path);
+    realpath(b, output_path);
+    int is_not_same = 0;
+    
+    for (int i = 0; (input_path[i] && output_path[i]); i++) {       
+        if (input_path[i] != output_path[i]) is_not_same = 1;
+    }   
+    if (!is_not_same) is_same = false;
+
+    return is_same;
+}
 
 class encoder{
 private:
@@ -41,6 +58,10 @@ public:
     }
     
     void encode(const string& filename_in, const string& filename_out) {
+        if(!is_same_file(filename_in.c_str(), filename_out.c_str())) {
+            throw runtime_error("Same file passed twice to func.");
+        }
+
         ifstream input(filename_in, ios::binary);
         if (!input) {
             throw runtime_error("Failed to open input file.");
@@ -77,7 +98,7 @@ int main(){
         encoder enc(key);
 
         enc.encode("input.txt", "encrypted1.txt");
-        enc.encode("encrypted1.txt", "decrypted1.txt");
+        enc.encode("encrypted1.txt", "../task_2/./decrypted1.txt");
         cout << "Encryption and decryption 1 completed successfully." << endl;
 
         vector<byte> key2 = {byte('G'), byte('O'), byte('O'), byte('O'), byte('O'), byte('O'), byte('L')};
