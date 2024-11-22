@@ -73,7 +73,9 @@ public:
         return sqrt(val); 
     }
 
-    double argument() const { return atan2(imag, real); }
+    double argument() const { 
+        return atan2(imag, real);
+    }
 };
 
 
@@ -100,7 +102,14 @@ int main(){
         double arg = c1.argument();
         double mod = c1.module();
 
-        cout << "Arguement of c1: " << arg << endl;
+        Complex c3(-2, -2);    
+        Complex c4(2, 2);   
+        Complex c5(-2, 2);    
+        Complex c6(0, -2);  
+        cout << "Arguement of c3: " << c3.argument() << endl;
+        cout << "Arguement of c4: " << c4.argument() << endl;
+        cout << "Arguement of c5: " << c5.argument() << endl;
+        cout << "Arguement of c6: " << c6.argument() << endl;
         cout << "Module of c1: " << mod << endl;
     } catch(const std::exception& e){
         cerr << e.what() << '\n';
