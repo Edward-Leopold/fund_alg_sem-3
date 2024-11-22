@@ -8,62 +8,46 @@ using namespace std;
 
 class encoder{
 private:
-    vector<byte> S;
-    int x = 0;
-    int y = 0;
+    vector<byte> key;
+    // vector<byte> S;
+    // int x = 0;
+    // int y = 0;
 
-    // vector<byte> generateKeystream(size_t length) {
-    //     vector<byte> S(256);
-    //     vector<byte> keystream(length);
-
-    //     for (int i = 0; i < 256; ++i) {
-    //         S[i] = static_cast<byte>(i);
-    //     }
-
-    //     //key scheduling algorithm
-    //     size_t j = 0;
-    //     for (size_t i = 0; i < 256; ++i) {
-    //         j = (j + static_cast<size_t>(S[i]) + static_cast<size_t>(key[i % key.size()])) % 256;
-    //         swap(S[i], S[j]);
-    //     }
-
-    //     //PRGA (pseudo random generation algorithm)
-    //     size_t i = 0;
-    //     j = 0;
-    //     for (size_t n = 0; n < length; ++n) {
-    //         i = (i + 1) % 256;
-    //         j = (j + static_cast<size_t>(S[i])) % 256;
-    //         swap(S[i], S[j]);
-    //         keystream[n] = S[(static_cast<size_t>(S[i]) + static_cast<size_t>(S[j])) % 256];
-    //     }
-
-    //     return keystream;
-    // }
-
-    void KSA(vector<byte> key){
-        S.resize(256);
+    vector<byte> KSA(vector<byte> key){
+        vector<byte> S(256);
         for (int i = 0; i < 256; i++) {
             S[i] = byte(i);
         }
         //key scheduling algorithm
         int j = 0;
         for (int i = 0; i < 256; i++) {
-            j = (j + static_cast<int>(S[i]) + static_cast<int>(key[i % key.size()])) % 256;
+            j = (j + to_integer<int>(S[i]) + to_integer<int>(key[i % key.size()])) % 256;
             swap(S[i], S[j]);
         }
+
+        for (int i = 0; i < 256; ++i) {
+            cout << to_integer<int>(S[i]) << " ";
+        }
+        cout << endl;
+
+        return S;
     }
 
-    byte keyItem(){
+    byte keyItem(vector<byte> &S, int &x, int &y){
         x = (x + 1) % 256;
-        y = (y + static_cast<int>(S[x])) % 256;
+        y = (y + to_integer<int>(S[x])) % 256;
+
+        cout << "(" << x << " " << y << ") ";
 
         swap(S[x], S[y]);
 
-        return S[(static_cast<int>(S[x]) + static_cast<int>(S[y])) % 256];
+        return S[(to_integer<int>(S[x]) + to_integer<int>(S[y])) % 256];
     }
 public:
+    // encoder(vector<byte> key) : key(key) {}
+
     encoder(vector<byte> key){
-        KSA(key);
+        this->key = key;
     }
     
     void encode(const string& filename_in, const string& filename_out, bool flag) {
@@ -76,19 +60,17 @@ public:
             throw runtime_error("Failed to open output file.");
         }
 
+        int x = 0;
+        int y = 0;
+        vector<byte> S = KSA(key);
+
         char ch;
         while (input.get(ch)) {
-            ch = static_cast<unsigned char>(ch);
-            ch = static_cast<int>(byte(ch) ^ keyItem());           
-            output << (static_cast<char>(ch));          
+            ch = to_integer<int>(byte(ch) ^ keyItem(S, x, y));           
+            output.put(ch);
         }
-
-        // char byte; 
-        // while (input.get(byte)) {
-        //     byte ^= (keyItem());
-        //     output.put(byte);                          
-        // }
-
+        cout << "\n";
+    
         input.close();
         output.close();
     }
@@ -106,6 +88,7 @@ int main(){
         encoder enc(key);
 
         enc.encode("input.txt", "encrypted.txt", true);
+        cout << "\n";
         enc.encode("encrypted.txt", "decrypted.txt", false);
         cout << "Encryption and decryption completed successfully." << endl;
     }
