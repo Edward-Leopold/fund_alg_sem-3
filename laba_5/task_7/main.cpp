@@ -1,4 +1,7 @@
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <algorithm>
 
 
 class Product{
@@ -26,6 +29,8 @@ public:
             "Price: $" << price << "\n" << 
             "Storage Period: " << period << " days" << "\n";
     }
+
+    unsigned int getId() const { return id; }
 };
 
 class PerishableProduct: public Product{
@@ -39,7 +44,7 @@ public:
          }
     }
     double calculateStorageFee() const override{
-
+        return 1;
     }
 };
 
@@ -72,15 +77,36 @@ public:
     Product(name, id, weight, price, storagePeriod), flammability(flammability) {}
 
     double calculateStorageFee() const override{
-
+        return 1;
     }
 };
 
 
 class Warehouse{
-    private:
+private:
+    std::vector<std::unique_ptr<Product>> products;
+public:
+    void addProduct(Product* product) {
+        if (!product) {
+            throw std::invalid_argument("Cannot add null product to warehouse.");
+        }
+        products.push_back(std::unique_ptr<Product>(product));
+    }
 
-    public:
+    void removeProduct(unsigned int id) {
+        auto iter = std::remove_if(products.begin(), products.end(), [id](const auto &p) { return p->getId() == id; });
+        if (iter == products.end()) {
+            throw std::runtime_error("Product with ID " + std::to_string(id) + " not found.");
+        }
+        products.erase(iter, products.end());
+    }
+
+    void displayAllProducts() const {
+        for (const auto &product: products) {
+            product->displayInfo();
+            std::cout << "--------------------\n";
+        }
+    }
 
 }; 
 
@@ -89,7 +115,16 @@ class Warehouse{
 
 int main(){
     try{
+        Warehouse ware;
         
+        PerishableProduct p1{"kolbasa", 12345, 0.4, 300, 12, 50};
+        PerishableProduct p2{"hleb", 819345, 0.4, 80, 10, 7};
+        ware.addProduct(&p1);
+        ware.addProduct(&p2);
+
+        ware.displayAllProducts();
+
+
     }
     catch(const std::exception& e){
         std::cerr << e.what() << '\n';
