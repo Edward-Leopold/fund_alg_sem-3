@@ -41,7 +41,7 @@ Date parseDate(const std::string& dateStr) {
 
 
 class Product{
-private:
+protected:
     std::string name;
     unsigned int id;
     double weight;
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    virtual double calculateStorageFee() const = 0;
+    virtual double calculateStorageFee() const { return weight * 100; }
 
     virtual void displayInfo() const {
         std::cout << 
@@ -69,12 +69,50 @@ public:
 
 class PerishableProduct: public Product{
 private:
-    /* data */
+    Date expirationDate;
 public:
-    PerishableProduct(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, std::string expirationDate);
-    
-    ~PerishableProduct();
+    PerishableProduct(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, std::string expirationDate): 
+    Product(name, id, weight, price, storagePeriod){
+        this->expirationDate = parseDate(expirationDate); 
+    }
+    double calculateStorageFee() const override{
+
+    }
 };
+
+class ElectronicProduct: public Product{
+private:
+    int warrantyPeriod;
+    double powerRating;
+public:
+    ElectronicProduct(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, int warrantyPeriod, double powerRating): 
+    Product(name, id, weight, price, storagePeriod), warrantyPeriod(warrantyPeriod), powerRating(powerRating){
+        if (warrantyPeriod < 1){
+            throw std::invalid_argument("Warranty period can't be less than 1 day");
+        }
+        if (powerRating < 0){
+            throw std::invalid_argument("Power rating must be non-negative");
+        }
+    }
+    void displayInfo() const override{
+        Product::displayInfo();
+        std::cout << "Warranty period: " << warrantyPeriod << " days" << "\n"
+        << "Power rating: " << powerRating << " W" << "\n" ;
+    }
+};
+
+class BuildingMaterial: public Product{
+private:
+    bool flammability;
+public:
+    BuildingMaterial(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, bool flammability): 
+    Product(name, id, weight, price, storagePeriod), flammability(flammability) {}
+
+    double calculateStorageFee() const override{
+        
+    }
+};
+
 
 
 
