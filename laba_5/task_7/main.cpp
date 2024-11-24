@@ -98,6 +98,11 @@ public:
         if (!product) {
             throw std::invalid_argument("Cannot add null product to warehouse.");
         }
+        auto iter = std::find_if(products.begin(), products.end(), [product](const auto& prod){ return product->getId() == prod->getId(); });
+        if (iter != products.end()) {
+            throw std::runtime_error("Product with ID " + std::to_string(product->getId()) + " already exists.");
+        }
+
         products.push_back(std::unique_ptr<Product>(product));
     }
 
@@ -156,7 +161,7 @@ int main(){
         ware.addProduct(new BuildingMaterial{"Bricks", 78901, 500.0, 10000, 20, 4});
         ware.addProduct(new ElectronicProduct{"TV", 123456, 10.0, 2000, 24, 365, 150});
 
-        ware.displayAllProducts();
+        // ware.displayAllProducts();
         std::cout << "Total fee: " << ware.calculateTotalStorageFee() << "\n";
 
         std::cout << "\nSearching for Perishable products:\n";
