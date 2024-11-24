@@ -1,8 +1,46 @@
 #include <iostream>
+#include <regex>
+
+struct Date {
+    int day;
+    int month;
+    int year;
+};
+
+int day_of_month(int month, int year){
+    int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    if (year % 4 == 0){
+        days[1] = 29;
+        if (year % 100 == 0 && year % 400 != 0) days[1] = 28;
+    } 
+    return days[month - 1];
+}
+
+Date parseDate(const std::string& dateStr) {
+    // regexp of format "dd.mm.yyyy"
+    std::regex dateRegex(R"((\d{2})\.(\d{2})\.(\d{4}))");
+    std::smatch match;
+
+    if (!std::regex_match(dateStr, match, dateRegex)) {
+        throw std::invalid_argument("Неверный формат даты");
+    }
+
+    int day = std::stoi(match[1].str());
+    int month = std::stoi(match[2].str());
+    int year = std::stoi(match[3].str());
+
+    if ((year > 2050 || year < 1980) || (month < 0 || month > 12)) {
+        throw std::invalid_argument("Неверный формат даты");
+    }
+    if (day < 1 || day > day_of_month(month, year)) {
+        throw std::invalid_argument("Неверный формат даты");
+    }
+
+    return Date{day, month, year};
+}
 
 
-class Product
-{
+class Product{
 private:
     std::string name;
     unsigned int id;
@@ -27,6 +65,15 @@ public:
             "Price: $" << price << "\n" << 
             "Storage Period: " << expiration << " days" << "\n";
     }
+};
+
+class PerishableProduct: public Product{
+private:
+    /* data */
+public:
+    PerishableProduct(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, std::string expirationDate);
+    
+    ~PerishableProduct();
 };
 
 
