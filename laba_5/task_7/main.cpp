@@ -43,10 +43,15 @@ public:
             throw std::invalid_argument("Can't store expired product!");
          }
     }
+
     double calculateStorageFee() const override{
         double extra = (expirationDate > 5) ? 1.0 : ((6 - expirationDate) * 0.05) + 1;
         double res = Product::calculateStorageFee() * extra;
         return res;
+    }
+
+    int getDate() const {
+        return expirationDate;
     }
 };
 
@@ -134,9 +139,17 @@ public:
             }
         }
         if (flag == false){
-            std::cout << "Nothing was found for this category " << category 
-            << ", try the following categories: Perishable, Electronic, BuildingMaterial" << "\n"; 
+            std::cout << "Nothing was found for " << category << " category " << "\n"; 
         }
+    }
+
+    void displayInventory() const {
+        std::cout << "\nBuilding Material products:" << "\n";
+        findProductsByCategory("BuildingMaterial");
+        std::cout << "\nElectronic products:" << "\n";
+        findProductsByCategory("Electronic");
+        std::cout << "\nPerishable products:" << "\n";
+        findProductsByCategory("Perishable");
     }
 
     double calculateTotalStorageFee() const {
@@ -145,6 +158,22 @@ public:
             totalFee += product->calculateStorageFee();
         }
         return totalFee;
+    }
+
+    std::vector<PerishableProduct> getExpiringProducts(const int days) const {
+        if (days < 0){
+            throw std::invalid_argument("Invalid days amount");
+        }
+
+        std::vector<PerishableProduct> res;
+        for (const auto &product: products){
+            auto prod = dynamic_cast<const PerishableProduct *>(product.get());
+            if (prod && prod->getDate() < days) {
+                res.push_back(*prod);
+            }
+        }
+
+        return res;
     }
 
 }; 
@@ -164,8 +193,18 @@ int main(){
         // ware.displayAllProducts();
         std::cout << "Total fee: " << ware.calculateTotalStorageFee() << "\n";
 
-        std::cout << "\nSearching for Perishable products:\n";
-        ware.findProductsByCategory("Perishable");
+        // std::cout << "\nSearching for Perishable products:\n";
+        // ware.findProductsByCategory("Perishable");
+        int thresholdDate = 10;
+        auto expiringProducts = ware.getExpiringProducts(thresholdDate);
+
+        // std::cout << "\nProducts expiring by " << thresholdDate << "days:\n";
+        // for (const auto &product: expiringProducts) {
+        //     product.displayInfo();
+        //     std::cout << "--------------------\n";
+        // }
+
+        ware.displayInventory();
     }
     catch(const std::exception& e){
         std::cerr << e.what() << '\n';
