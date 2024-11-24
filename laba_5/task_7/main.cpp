@@ -26,7 +26,7 @@ public:
             "Name: " << name << "\n" <<
             "ID: " << id << "\n" <<
             "Weight: " << weight << " kg" << "\n" << 
-            "Price: $" << price << "\n" << 
+            "Price: " << price << " rub" << "\n" << 
             "Storage Period: " << period << " days" << "\n";
     }
 
@@ -44,7 +44,9 @@ public:
          }
     }
     double calculateStorageFee() const override{
-        return 1;
+        double extra = (expirationDate > 5) ? 1.0 : ((6 - expirationDate) * 0.05) + 1;
+        double res = Product::calculateStorageFee() * extra;
+        return res;
     }
 };
 
@@ -71,13 +73,19 @@ public:
 
 class BuildingMaterial: public Product{
 private:
-    bool flammability;
+    int flammability;
 public:
-    BuildingMaterial(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, bool flammability): 
-    Product(name, id, weight, price, storagePeriod), flammability(flammability) {}
+    BuildingMaterial(const std::string &name, unsigned int id, double weight, double price, int storagePeriod, int flammability): 
+    Product(name, id, weight, price, storagePeriod), flammability(flammability) {
+        if (flammability < 0 || flammability > 4){
+            throw std::invalid_argument("Flammability must be from 0 to 4");
+        }
+    }
 
     double calculateStorageFee() const override{
-        return 1;
+        double extra = (flammability < 3) ? 1.0 : ((flammability - 2) * 1.0) + 1.0;
+        double res = Product::calculateStorageFee() * extra;
+        return res;
     }
 };
 
@@ -108,6 +116,32 @@ public:
         }
     }
 
+    void findProductsByCategory(const std::string& category) const {
+        bool flag = false;
+
+        for (const auto& product : products) {
+            if ((category == "Perishable" && dynamic_cast<PerishableProduct*>(product.get())) ||
+                (category == "Electronic" && dynamic_cast<ElectronicProduct*>(product.get())) ||
+                (category == "BuildingMaterial" && dynamic_cast<BuildingMaterial*>(product.get()))) {
+                flag = true;
+                product.get()->displayInfo();
+                std::cout << "--------------------\n";
+            }
+        }
+        if (flag == false){
+            std::cout << "Nothing was found for this category " << category 
+            << ", try the following categories: Perishable, Electronic, BuildingMaterial" << "\n"; 
+        }
+    }
+
+    double calculateTotalStorageFee() const {
+        double totalFee = 0;
+        for (const auto &product: products) {
+            totalFee += product->calculateStorageFee();
+        }
+        return totalFee;
+    }
+
 }; 
 
 
@@ -117,14 +151,16 @@ int main(){
     try{
         Warehouse ware;
         
-        PerishableProduct p1{"kolbasa", 12345, 0.4, 300, 12, 50};
-        PerishableProduct p2{"hleb", 819345, 0.4, 80, 10, 7};
-        ware.addProduct(&p1);
-        ware.addProduct(&p2);
+        ware.addProduct(new PerishableProduct{"kolbasa", 12345, 0.4, 300, 12, 6});
+        ware.addProduct(new PerishableProduct{"hleb", 819345, 0.4, 80, 10, 7});
+        ware.addProduct(new BuildingMaterial{"Bricks", 78901, 500.0, 10000, 20, 4});
+        ware.addProduct(new ElectronicProduct{"TV", 123456, 10.0, 2000, 24, 365, 150});
 
         ware.displayAllProducts();
+        std::cout << "Total fee: " << ware.calculateTotalStorageFee() << "\n";
 
-
+        std::cout << "\nSearching for Perishable products:\n";
+        ware.findProductsByCategory("Perishable");
     }
     catch(const std::exception& e){
         std::cerr << e.what() << '\n';
