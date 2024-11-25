@@ -231,7 +231,7 @@ int main(){
 
         // std::cout << ware << "Hello!" << "some messages in stream;" << std::endl;
 
-        ware[819345]->displayInfo();
+        ware[12345]->displayInfo();
     }
     catch(const std::exception& e){
         std::cerr << e.what() << '\n';
