@@ -176,8 +176,29 @@ public:
         return res;
     }
 
+    Warehouse& operator += (Product* product) {
+        addProduct(product);
+        return *this;
+    }
+
+    Warehouse& operator -= (unsigned int id) {
+        removeProduct(id);
+        return *this;
+    }
+
+    Product* operator[] (unsigned int id) const{
+        auto iter = std::find_if(products.begin(), products.end(), [id](const auto& prod){ return id == prod->getId();});
+        if (iter == products.end()) {
+            return nullptr;
+        }
+        return iter->get();
+    }
 }; 
 
+std::ostream& operator<<(std::ostream& stream, const Warehouse& ware) {
+    ware.displayAllProducts();
+    return stream;
+}
 
 
 
@@ -189,6 +210,8 @@ int main(){
         ware.addProduct(new PerishableProduct{"hleb", 819345, 0.4, 80, 10, 7});
         ware.addProduct(new BuildingMaterial{"Bricks", 78901, 500.0, 10000, 20, 4});
         ware.addProduct(new ElectronicProduct{"TV", 123456, 10.0, 2000, 24, 365, 150});
+        ware += new ElectronicProduct{"mixer", 124353456, 10.0, 4000, 24, 365, 50};
+        ware -= 819345;
 
         // ware.displayAllProducts();
         std::cout << "Total fee: " << ware.calculateTotalStorageFee() << "\n";
@@ -204,7 +227,11 @@ int main(){
         //     std::cout << "--------------------\n";
         // }
 
-        ware.displayInventory();
+        // ware.displayInventory();
+
+        // std::cout << ware << "Hello!" << "some messages in stream;" << std::endl;
+
+        ware[819345]->displayInfo();
     }
     catch(const std::exception& e){
         std::cerr << e.what() << '\n';
