@@ -201,6 +201,95 @@ public:
         }
         return true;
     }
+
+    // iterator class
+    class Iterator{
+    private:
+        double* ptr;
+    public:
+        Iterator(double *p){
+            if (p == nullptr) {
+                throw std::invalid_argument("Null pointer for iterator");
+            }
+            ptr = p;
+        }
+        
+        Iterator& operator ++ (){ 
+            ++ptr;
+            return *this;
+        }
+        Iterator operator ++ (int){
+            Iterator temp = *this;
+            ++ptr;
+            return temp;
+        }
+
+        Iterator& operator -- (){
+            --ptr;
+            return *this;
+        }
+        Iterator operator -- (int){
+            Iterator temp = *this;
+            --ptr;
+            return temp;
+        }
+
+        Iterator operator + (size_t n) const { 
+            return Iterator(ptr + n); 
+        }
+        Iterator& operator += (size_t n) & {
+            *this = *this + n;
+            return *this;
+        }
+
+        Iterator operator - (size_t n) const { 
+            return Iterator(ptr - n); 
+        }
+        Iterator& operator -= (size_t n) & {
+            *this = *this - n;
+            return *this;
+        }
+        
+        int operator - (const Iterator& other) const { 
+            return ptr - other.ptr; 
+        }
+
+        bool operator == (const Iterator& other) const {
+            return ptr == other.ptr;
+        }
+        bool operator != (const Iterator& other) const { 
+            return ptr != other.ptr; 
+        }
+        bool operator < (const Iterator& other) const {
+            return (ptr < other.ptr) ? true : false;
+        }
+        bool operator > (const Iterator& other) const {
+            return (ptr > other.ptr) ? true : false;
+        }
+        bool operator <= (const Iterator& other) const {
+            return (ptr <= other.ptr) ? true : false;
+        }
+        bool operator >= (const Iterator& other) const {
+            return (ptr >= other.ptr) ? true : false;
+        }
+
+        double& operator * () const {
+            return *ptr; 
+        }
+        double* operator -> () { 
+            return ptr; 
+        }
+        double& operator [] (size_t index) const { 
+            return *(ptr + index); 
+        }
+    };
+    
+    Iterator begin() { 
+        return Iterator(v_data); 
+    }           
+    Iterator end() { 
+        return Iterator(v_data + v_size); 
+    } 
     
 };
 
@@ -225,8 +314,9 @@ int main(){
 
         // v.resize(140, 36.6);
         v.erase(4);
-        data = v.data();
-        for (int i = 0; i < v.size(); i++) std::cout << data[i] << " ";
+        for (const double& n: v){
+            std::cout << n << " ";
+        }
         std::cout << '\n';
 
         std::cout << (v > v2) << std::endl;
