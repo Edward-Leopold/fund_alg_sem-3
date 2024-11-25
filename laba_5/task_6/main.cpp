@@ -49,28 +49,53 @@ public:
         delete[] v_data;
     }
 
-    double& at(size_t index) const { // const double& ?????????
+    const double& at(size_t index) const {
+        if (index >= v_size) {
+            throw std::invalid_argument("Incorrect index passed");
+        }
+        return v_data[index];
+    }
+
+    double& at(size_t index) {
         if (index >= v_size){
             throw std::invalid_argument("Incorrect index passed");
         }
         return v_data[index];
     }
 
-    double& front() const {
+    const double& front() const {
         if (v_size == 0) {
             throw std::runtime_error("Can't get front element of empty vector");
         }
         return v_data[0];
     }
 
-    double& back() const {
+    double& front() {
+        if (v_size == 0) {
+            throw std::runtime_error("Can't get front element of empty vector");
+        }
+        return v_data[0];
+    }
+
+    const double& back() const {
         if (v_size == 0) {
             throw std::runtime_error("Can't get back element of empty vector");
         }
         return v_data[v_size - 1];
     }
 
-    double* data() const {
+    double& back() {
+        if (v_size == 0) {
+            throw std::runtime_error("Can't get back element of empty vector");
+        }
+        return v_data[v_size - 1];
+    }
+
+    const double* data() const {
+        return v_data;
+    }
+
+    double* data() {
         return v_data;
     }
 
