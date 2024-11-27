@@ -79,7 +79,7 @@ public:
         }
         return binary_int(res);
     }
-    binary_int operator += (const binary_int& other){
+    binary_int operator+= (const binary_int& other){
         *this = *this + other;
         return *this;
     }
@@ -169,7 +169,7 @@ ostream& operator << (ostream &os, const binary_int &b){
 
 int main(){
     try{
-        binary_int b1(2147483647);
+        binary_int b1(2647);
         binary_int b2(2);
         binary_int b3 = b1 * b2;
         binary_int b4(-2);
