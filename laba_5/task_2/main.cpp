@@ -5,8 +5,6 @@
 #include <fstream>
 #include <linux/limits.h>
 
-using namespace std;
-
 bool is_same_file(const char *a, const char *b){
     bool is_same = true;
     char input_path[PATH_MAX];
@@ -25,59 +23,59 @@ bool is_same_file(const char *a, const char *b){
 
 class encoder{
 private:
-    vector<byte> key;
+    std::vector<std::byte> key;
 
-    vector<byte> KSA(vector<byte> key){
-        vector<byte> S(256);
+    std::vector<std::byte> KSA(std::vector<std::byte> key){
+        std::vector<std::byte> S(256);
         for (int i = 0; i < 256; i++) {
-            S[i] = byte(i);
+            S[i] = std::byte(i);
         }
         //key scheduling algorithm
         int j = 0;
         for (int i = 0; i < 256; i++) {
-            j = (j + to_integer<int>(S[i]) + to_integer<int>(key[i % key.size()])) % 256;
-            swap(S[i], S[j]);
+            j = (j + std::to_integer<int>(S[i]) + std::to_integer<int>(key[i % key.size()])) % 256;
+            std::swap(S[i], S[j]);
         }
 
         return S;
     }
 
-    byte keyItem(vector<byte> &S, int &x, int &y){
+    std::byte keyItem(std::vector<std::byte> &S, int &x, int &y){
         x = (x + 1) % 256;
-        y = (y + to_integer<int>(S[x])) % 256;
+        y = (y + std::to_integer<int>(S[x])) % 256;
 
-        swap(S[x], S[y]);
+        std::swap(S[x], S[y]);
 
-        return S[(to_integer<int>(S[x]) + to_integer<int>(S[y])) % 256];
+        return S[(std::to_integer<int>(S[x]) + std::to_integer<int>(S[y])) % 256];
     }
 public:
     // encoder(vector<byte> key) : key(key) {}
 
-    encoder(vector<byte> key){
+    encoder(std::vector<std::byte>& key){
         this->key = key;
     }
     
-    void encode(const string& filename_in, const string& filename_out) {
+    void encode(const std::string& filename_in, const std::string& filename_out) {
         if(!is_same_file(filename_in.c_str(), filename_out.c_str())) {
-            throw runtime_error("Same file passed twice to func.");
+            throw std::runtime_error("Same file passed twice to func.");
         }
 
-        ifstream input(filename_in, ios::binary);
+        std::ifstream input(filename_in, std::ios::binary);
         if (!input) {
-            throw runtime_error("Failed to open input file.");
+            throw std::runtime_error("Failed to open input file.");
         }
-        ofstream output(filename_out, ios::binary);
+        std::ofstream output(filename_out, std::ios::binary);
         if (!output) {
-            throw runtime_error("Failed to open output file.");
+            throw std::runtime_error("Failed to open output file.");
         }
 
         int x = 0;
         int y = 0;
-        vector<byte> S = KSA(key);
+        std::vector<std::byte> S = KSA(key);
 
         char ch;
         while (input.get(ch)) {
-            ch = to_integer<int>(byte(ch) ^ keyItem(S, x, y));           
+            ch = std::to_integer<int>(std::byte(ch) ^ keyItem(S, x, y));           
             output.put(ch);
         }
     
@@ -85,7 +83,7 @@ public:
         output.close();
     }
 
-    void setKey(vector<byte> new_key){
+    void setKey(std::vector<std::byte> new_key){
         key = new_key;
     }
 };
@@ -94,20 +92,20 @@ public:
 
 int main(){
     try{
-        vector<byte> key = {byte('A'), byte('B'), byte('C')};
+        std::vector<std::byte> key = {std::byte('A'), std::byte('B'), std::byte('C')};
         encoder enc(key);
 
         enc.encode("input.txt", "encrypted1.txt");
         enc.encode("encrypted1.txt", "../task_2/./decrypted1.txt");
-        cout << "Encryption and decryption 1 completed successfully." << endl;
+        std::cout << "Encryption and decryption 1 completed successfully." << std::endl;
 
-        vector<byte> key2 = {byte('G'), byte('O'), byte('O'), byte('O'), byte('O'), byte('O'), byte('L')};
+        std::vector<std::byte> key2 = {std::byte('G'), std::byte('O'), std::byte('O'), std::byte('O'), std::byte('O'), std::byte('O'), std::byte('L')};
         enc.setKey(key2);
         enc.encode("input.txt", "encrypted2.txt");
         enc.encode("encrypted2.txt", "decrypted2.txt");
-        cout << "Encryption and decryption 2 completed successfully." << endl;
+        std::cout << "Encryption and decryption 2 completed successfully." << std::endl;
     }
-    catch(const exception& e){
+    catch(const std::exception& e){
         std::cerr << e.what() << '\n';
     }
 
