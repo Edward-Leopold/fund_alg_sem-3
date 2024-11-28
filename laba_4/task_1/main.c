@@ -394,6 +394,14 @@ errCodes process_text(FILE* file, HashTable* table, int *c, FILE* output) {
                 return MALLOC_ERR; 
             }
             char* replacement = find_value(table, buffer);
+            while(replacement){
+                char* new_replacement = find_value(table, replacement);
+                if (new_replacement) {
+                    replacement = new_replacement;
+                } else{
+                    break;
+                }
+            }
             if (replacement) {
                 fprintf(output, "%s", replacement); 
             } else {

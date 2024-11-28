@@ -1,5 +1,5 @@
 
-100 + 3.14159 equals approximately 103.14159. Don't forget that 100 is AAa zzz Aa constant. zzz
+100 + 3.14159 equals approximately 103.14159. Don't forget that 100 is AAa BEBRA Aa constant. BEBRA
     BEBRA
         #zzz
-"#define 100 100\n#define 3.14159 + 3.14159 equals " zzz
+"#define 100 100\n#define 3.14159 + 3.14159 equals " BEBRA
