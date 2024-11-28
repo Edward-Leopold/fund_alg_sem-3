@@ -61,8 +61,20 @@ HashItem* create_item(char* key, char* value){
     HashItem *item = malloc(sizeof(HashItem));
     if (!item) return NULL;
 
-    item->key = key;
-    item->value = value;
+    item->key = (char*)malloc(sizeof(char) * (strlen(key) + 1));
+    if(item->key == NULL){
+        free(item);
+        return NULL;
+    }
+    item->value = (char*)malloc(sizeof(char) * (strlen(value) + 1));
+    if(item->value == NULL){
+        free(item);
+        free(key);
+        return NULL;
+    }
+
+    strcpy(item->key, key);
+    strcpy(item->value, value);
     item->next = NULL;
 
     return item;
@@ -93,7 +105,11 @@ HashItem* pop_item(HashItem** head){
 }
 
 void delete_item(HashItem* item){
-    if(item) free(item);
+    if(item) {
+        free(item->key);
+        free(item->value);
+        free(item);
+    }
 }
 
 int list_len(HashItem* head){
@@ -188,7 +204,6 @@ errCodes insert_table(HashTable* table, char* key, char* value, int hash){
     if (!item){
         return MALLOC_ERR;
     }
-
     push_item(&(table->items[index]), item);
     return SUCCESS;
 }
@@ -231,6 +246,13 @@ int is_need_rebuild(HashTable *table){
     return 0;
 }
 
+void next_lexem(int* c, FILE* f){
+    while((*c = fgetc(f)) != EOF){
+        if(!(*c == ' ' || *c == '\t' || *c == '\n')) break;
+    }
+    fseek(f, -1, SEEK_CUR);
+}
+
 errCodes read_str(FILE* input, char** buffer, int* c){
     int capacity = 20;
     int idx = 0;
@@ -239,6 +261,9 @@ errCodes read_str(FILE* input, char** buffer, int* c){
         return MALLOC_ERR;
     }
     while((*c = fgetc(input)) != EOF){
+        if (isspace(*c)) {
+            break;
+        }
         str[idx++] = *c;
         if(capacity == idx){
             capacity *= 2;
@@ -249,6 +274,7 @@ errCodes read_str(FILE* input, char** buffer, int* c){
             str = temp;
         }
     }
+    fseek(input, -1, SEEK_CUR);
     str[idx] = '\0';
     *buffer = str;
     return SUCCESS;
@@ -275,11 +301,12 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
         }
 
         char* str;
-        if (read_str(file, &str, c) != SUCCESS) {
+        if (read_str(file, &str, c) != SUCCESS) { // smth went wrong
             free(key);
             free(value);
             return MALLOC_ERR;
         }
+        next_lexem(c, file);
 
         if (strcmp(str, "#define") == 0) {
             free(str);
@@ -289,6 +316,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
                 free(value);
                 return MALLOC_ERR;
             }
+            next_lexem(c, file);
             // strcpy(key, str); 
             // key = str;
             // free(str);
@@ -298,6 +326,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
                 free(value);
                 return MALLOC_ERR;
             }
+            // next_lexem(c, file);
             // strcpy(value, str);
             // value = str;
             // free(str);
@@ -406,7 +435,7 @@ int main(int argc, char** argv){
         return 1;
     }
 
-    HashTable* table = create_table(HASHSIZE);
+    HashTable* table = create_table(HASHSIZE);  
     if (!table) {
         fclose(file);
         printf("Unable to create hash table.\n");
