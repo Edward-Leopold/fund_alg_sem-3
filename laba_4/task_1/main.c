@@ -21,6 +21,7 @@ typedef enum errCodes{
 } errCodes;
 
 typedef struct HashItem{
+    size_t hash_value;
     char* key;
     char* value;
     struct HashItem* next;
@@ -57,7 +58,7 @@ errCodes getArgs(int argc, char** argv, char** filename){
     return SUCCESS;
 }
 
-HashItem* create_item(char* key, char* value){
+HashItem* create_item(char* key, char* value, size_t hash_val){
     HashItem *item = malloc(sizeof(HashItem));
     if (!item) return NULL;
 
@@ -68,15 +69,16 @@ HashItem* create_item(char* key, char* value){
     }
     item->value = (char*)malloc(sizeof(char) * (strlen(value) + 1));
     if(item->value == NULL){
+        free(item->key);
         free(item);
-        free(key);
         return NULL;
     }
 
     strcpy(item->key, key);
     strcpy(item->value, value);
     item->next = NULL;
-
+    item->hash_value = hash_val;
+    
     return item;
 }
 
@@ -161,6 +163,7 @@ void delete_table(HashTable* table){
             }
         }
         free(table->items);
+        free(table);
     }
 }
 
@@ -198,9 +201,9 @@ size_t hash_function(char* key){
     return num;
 }
 
-errCodes insert_table(HashTable* table, char* key, char* value, int hash){
+errCodes insert_table(HashTable* table, char* key, char* value, size_t hash){
     int index = hash % table->size;
-    HashItem* item = create_item(key, value);
+    HashItem* item = create_item(key, value, hash);
     if (!item){
         return MALLOC_ERR;
     }
@@ -215,15 +218,18 @@ HashTable* refactor_table(HashTable* oldtable, int new_hashsize){
     for (int i = 0; i < oldtable->size; i++){
         while(oldtable->items[i]){
             HashItem* item = pop_item(&(oldtable->items[i]));
-            char* key = item->key;
-            char* value = item->value;
-            delete_item(item);
-            if (insert_table(table, key, value, hash_function(key)) != SUCCESS){
+            // char* key = item->key;
+            // char* value = item->value;
+            // size_t hash_value = item->hash_value;
+            
+            if (insert_table(table, item->key, item->value, item->hash_value) != SUCCESS){
                 delete_table(table);
                 return NULL;
             }
+            delete_item(item);
         }
     }
+    delete_table(oldtable);
 
     return table;
 }
@@ -287,16 +293,9 @@ errCodes read_str(FILE* input, char** buffer, int* c){
 }
 
 errCodes read_define(FILE * file, int *c, HashTable** table){
-   int capacity_key = 20, capacity_value = 20;
-    char* key = (char*)malloc(capacity_key * sizeof(char));
-    if (key == NULL) {
-        return MALLOC_ERR;
-    }
-    char* value = (char*)malloc(capacity_value * sizeof(char));
-    if (value == NULL) {
-        free(key);
-        return MALLOC_ERR;
-    }
+//    int capacity_key = 20, capacity_value = 20;
+    char* key;
+    char* value;
 
     while (!feof(file)) {
         long start_pos = ftell(file);
@@ -356,6 +355,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
             free(key);
             free(value);
         } else {
+            free(str);
             fseek(file, start_pos, SEEK_SET);
             break;
         }
@@ -465,6 +465,28 @@ int main(int argc, char** argv){
         return 1;
     }
 
+    print_table(table);
+    int is_need = is_need_rebuild(table);
+    int hashsize = HASHSIZE;
+    while(is_need){
+        hashsize += 74;
+        HashTable* new_table = refactor_table(table, hashsize);
+        if (!new_table){
+            printf("Error while refactoring table\n");
+            delete_table(table);
+            fclose(file);
+            fclose(output);
+            return 1;
+        }   
+        table = new_table;
+        int new_is_need = is_need_rebuild(table);
+        if (new_is_need){
+            is_need = new_is_need;
+        } else{
+            break;
+        }
+    }
+    printf("\nrefactored!\n");
     print_table(table);
 
     errCodes process_status = process_text(file, table, &c, output);
