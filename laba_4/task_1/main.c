@@ -181,8 +181,8 @@ void print_table(HashTable* table) {
 }
 
 
-int hash_function(char* key){
-    int num = 0;
+size_t hash_function(char* key){
+    size_t num = 0;
     int len = strlen(key);
     for (int i = 0; i < len; i++) {
         if (key[i] >= '0' && key[i] <= '9'){
@@ -269,10 +269,15 @@ errCodes read_str(FILE* input, char** buffer, int* c){
             capacity *= 2;
             char* temp = (char*)realloc(str, capacity * sizeof(char));
             if(temp == NULL){
+                free(str);
                 return REALLOC_ERR;
             }
             str = temp;
         }
+    }
+    if (idx == 0 && *c == EOF) { // EOF, но ничего не прочитано
+        free(str);
+        return MALLOC_ERR;
     }
     fseek(input, -1, SEEK_CUR);
     str[idx] = '\0';
@@ -377,33 +382,30 @@ char* find_value(HashTable* table, char* key) {
     return NULL; // Значение по ключу не найдено
 }
 
-errCodes process_text(FILE* file, HashTable* table, FILE* output) {
-    char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), file)) {
-        char* cursor = buffer;
-        while (*cursor) {
-            if (isalnum(*cursor)) {
-                char word[128];
-                int word_idx = 0;
+errCodes process_text(FILE* file, HashTable* table, int *c, FILE* output) {
+    char* buffer = NULL;
 
-                while (isalnum(*cursor) && word_idx < sizeof(word) - 1) {
-                    word[word_idx++] = *cursor++;
-                }
-                word[word_idx] = '\0';
-
-                char* replacement = find_value(table, word);
-                if (replacement) {
-                    fprintf(output, "%s", replacement);
-                } else {
-                    fprintf(output, "%s", word);
-                }
-            } else {
-                fputc(*cursor, output);
-                cursor++;
+    while ((*c = fgetc(file)) != EOF) {
+        if (isalnum(*c)) { // Начало слова
+            fseek(file, -1, SEEK_CUR); // Вернуться на шаг назад
+            if (read_str(file, &buffer, c) != SUCCESS) {
+                if (buffer) free(buffer);
+                return MALLOC_ERR; // Ошибка выделения памяти
             }
+            char* replacement = find_value(table, buffer);
+            if (replacement) {
+                fprintf(output, "%s", replacement); // Замена слова
+            } else {
+                fprintf(output, "%s", buffer); // Печать оригинального слова
+            }
+            free(buffer);
+            buffer = NULL;
+        } else {
+            fputc(*c, output); // Печать остальных символов
         }
     }
     return SUCCESS;
+
 }
 
 
@@ -461,7 +463,7 @@ int main(int argc, char** argv){
 
     print_table(table);
 
-    errCodes process_status = process_text(file, table, output);
+    errCodes process_status = process_text(file, table, &c, output);
     if (process_status != SUCCESS) {
         printf("Error processing text. Error code: %d\n", process_status);
         delete_table(table);
