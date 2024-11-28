@@ -275,11 +275,12 @@ errCodes read_str(FILE* input, char** buffer, int* c){
             str = temp;
         }
     }
-    if (idx == 0 && *c == EOF) { // EOF, но ничего не прочитано
+    if (idx == 0 && *c == EOF) { 
         free(str);
         return MALLOC_ERR;
     }
-    fseek(input, -1, SEEK_CUR);
+    if (*c != EOF) fseek(input, -1, SEEK_CUR);
+    
     str[idx] = '\0';
     *buffer = str;
     return SUCCESS;
@@ -367,7 +368,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
 
 char* find_value(HashTable* table, char* key) {
     if (!table || !table->items || !key) {
-        return NULL; // Защита от некорректных указателей
+        return NULL;
     }
 
     int index = hash_function(key) % table->size;
@@ -375,33 +376,33 @@ char* find_value(HashTable* table, char* key) {
     
     while (current) {
         if (strcmp(current->key, key) == 0) {
-            return current->value; // Возвращаем найденное значение
+            return current->value;
         }
         current = current->next;
     }
-    return NULL; // Значение по ключу не найдено
+    return NULL; // value not found
 }
 
 errCodes process_text(FILE* file, HashTable* table, int *c, FILE* output) {
     char* buffer = NULL;
 
     while ((*c = fgetc(file)) != EOF) {
-        if (isalnum(*c)) { // Начало слова
-            fseek(file, -1, SEEK_CUR); // Вернуться на шаг назад
+        if (!isspace(*c)) { 
+            fseek(file, -1, SEEK_CUR); 
             if (read_str(file, &buffer, c) != SUCCESS) {
                 if (buffer) free(buffer);
-                return MALLOC_ERR; // Ошибка выделения памяти
+                return MALLOC_ERR; 
             }
             char* replacement = find_value(table, buffer);
             if (replacement) {
-                fprintf(output, "%s", replacement); // Замена слова
+                fprintf(output, "%s", replacement); 
             } else {
-                fprintf(output, "%s", buffer); // Печать оригинального слова
+                fprintf(output, "%s", buffer); 
             }
             free(buffer);
             buffer = NULL;
         } else {
-            fputc(*c, output); // Печать остальных символов
+            fputc(*c, output); 
         }
     }
     return SUCCESS;
@@ -425,11 +426,6 @@ int main(int argc, char** argv){
         }
         return 1;
     }
-
-    // char* key = malloc(sizeof(char) * 20);
-    // char* val = malloc(sizeof(char) * 20);
-    // HashItem* it = create_item("key", "value");
-    // printf("%s %s", it->key, it->value);
 
     FILE* file = fopen(filename, "r");
     if (!file){

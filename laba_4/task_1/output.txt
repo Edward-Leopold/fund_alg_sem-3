@@ -1,5 +1,5 @@
 
-100 + 3.14159 equals approximately 103.14159. Don't forget that 100 is a constant.
-
-
-"#define 100 100\n#define 3.14159 3.14159\n\nMAX + 3.14159 equals "
+100 + 3.14159 equals approximately 103.14159. Don't forget that 100 is AAa zzz Aa constant. zzz
+    BEBRA
+        #zzz
+"#define 100 100\n#define 3.14159 + 3.14159 equals " zzz

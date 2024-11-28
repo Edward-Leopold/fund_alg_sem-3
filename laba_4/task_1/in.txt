@@ -1,7 +1,9 @@
 #define MAX 100
 #define PI 3.14159
+#define AA zzz
+#define zzz BEBRA
 
-MAX + PI equals approximately 103.14159. Don't forget that MAX is a constant.
-
-
-"#define MAX 100\n#define PI 3.14159\n\nMAX + PI equals "
+MAX + PI equals approximately 103.14159. Don't forget that MAX is AAa AA Aa constant. AA
+    zzz
+        #zzz
+"#define MAX 100\n#define PI + PI equals " AA
