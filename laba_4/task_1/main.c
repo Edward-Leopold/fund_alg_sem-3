@@ -267,6 +267,72 @@ errCodes read_str(FILE* input, char** buffer, int* c){
         return MALLOC_ERR;
     }
     while((*c = fgetc(input)) != EOF){
+        if (isspace(*c) || (!isalnum(*c) && *c != '_')) {
+            break;
+        }
+        str[idx++] = *c;
+        if(capacity == idx){
+            capacity *= 2;
+            char* temp = (char*)realloc(str, capacity * sizeof(char));
+            if(temp == NULL){
+                free(str);
+                return REALLOC_ERR;
+            }
+            str = temp;
+        }
+    }
+    if (idx == 0 && *c == EOF) { 
+        free(str);
+        return MALLOC_ERR;
+    }
+    if (*c != EOF) fseek(input, -1, SEEK_CUR);
+    
+    str[idx] = '\0';
+    *buffer = str;
+    return SUCCESS;
+}
+
+errCodes read_key(FILE* input, char** buffer, int* c){
+    int capacity = 20;
+    int idx = 0;
+    char* str = (char*)malloc(capacity * sizeof(char));
+    if (!str){ 
+        return MALLOC_ERR;
+    }
+    while((*c = fgetc(input)) != EOF){
+        if (isspace(*c) || (!isalnum(*c) && *c != '_')) {
+            break;
+        }
+        str[idx++] = *c;
+        if(capacity == idx){
+            capacity *= 2;
+            char* temp = (char*)realloc(str, capacity * sizeof(char));
+            if(temp == NULL){
+                free(str);
+                return REALLOC_ERR;
+            }
+            str = temp;
+        }
+    }
+    if (idx == 0 && *c == EOF) { 
+        free(str);
+        return MALLOC_ERR;
+    }
+    if (*c != EOF) fseek(input, -1, SEEK_CUR);
+    
+    str[idx] = '\0';
+    *buffer = str;
+    return SUCCESS;
+}
+
+errCodes read_value(FILE* input, char** buffer, int* c){
+    int capacity = 20;
+    int idx = 0;
+    char* str = (char*)malloc(capacity * sizeof(char));
+    if (!str){ 
+        return MALLOC_ERR;
+    }
+    while((*c = fgetc(input)) != EOF){
         if (isspace(*c)) {
             break;
         }
@@ -293,7 +359,6 @@ errCodes read_str(FILE* input, char** buffer, int* c){
 }
 
 errCodes read_define(FILE * file, int *c, HashTable** table){
-//    int capacity_key = 20, capacity_value = 20;
     char* key;
     char* value;
 
@@ -304,37 +369,32 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
             free(value);
             return FILE_POS_ERR;
         }
+        next_lexem(c, file);
 
+        *c = fgetc(file);
+        if (*c != '#'){
+            fseek(file, -1, SEEK_CUR);
+            break;
+        }
         char* str;
-        if (read_str(file, &str, c) != SUCCESS) { // smth went wrong
-            free(key);
-            free(value);
+        if (read_value(file, &str, c) != SUCCESS) { // smth went wrong
             return MALLOC_ERR;
         }
         next_lexem(c, file);
 
-        if (strcmp(str, "#define") == 0) {
+        if (strcmp(str, "define") == 0) {
             free(str);
             
-            if (read_str(file, &key, c) != SUCCESS) {
+            if (read_key(file, &key, c) != SUCCESS) {
                 free(key);
-                free(value);
                 return MALLOC_ERR;
             }
             next_lexem(c, file);
-            // strcpy(key, str); 
-            // key = str;
-            // free(str);
 
-            if (read_str(file, &value, c) != SUCCESS) {
+            if (read_value(file, &value, c) != SUCCESS) {
                 free(key);
-                free(value);
                 return MALLOC_ERR;
             }
-            // next_lexem(c, file);
-            // strcpy(value, str);
-            // value = str;
-            // free(str);
 
             *c = fgetc(file);
             while (*c == ' ' || *c == '\t') {
@@ -361,8 +421,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
         }
     }
 
-    // free(key);
-    // free(value);
+    
     return SUCCESS;
 }
 
@@ -387,9 +446,9 @@ errCodes process_text(FILE* file, HashTable* table, int *c, FILE* output) {
     char* buffer = NULL;
 
     while ((*c = fgetc(file)) != EOF) {
-        if (!isspace(*c)) { 
+        if (!isspace(*c) && (isalnum(*c) || *c == '_')) { 
             fseek(file, -1, SEEK_CUR); 
-            if (read_str(file, &buffer, c) != SUCCESS) {
+            if (read_key(file, &buffer, c) != SUCCESS) {
                 if (buffer) free(buffer);
                 return MALLOC_ERR; 
             }

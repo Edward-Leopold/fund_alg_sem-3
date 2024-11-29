@@ -1,9 +1,22 @@
-#define MAX 100
-#define PI 3.14159
-#define AA zzz
-#define zzz BEBRA
+                     #define            MAXLENG22TH             10
+#define     GREETING                "Hello"
+#define TINGGREE "HI!"
 
-MAX + PI equals approximately 103.14159. Don't forget that MAX is AAa AA Aa constant. AA
-    zzz
-        #zzz
-"#define MAX 100\n#define PI + PI equals " AA
+#define PI 3.14
+#define A zzz
+#define zzz 78
+
+int main()
+{
+    char message[MAXLENzzzG22TH] = GREETING;
+    double radius = 2.5;
+    double area = PI * radius * radius;
+
+    char message1[MAXLENG22TH] = TINGGREE;
+    printf("%s\n", message);
+    printf("Circle area: %f\n", area);
+
+    int a = A + A+A+A+ C + D;
+
+    return 0;
+}
