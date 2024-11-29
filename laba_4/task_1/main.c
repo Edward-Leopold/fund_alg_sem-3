@@ -27,27 +27,10 @@ typedef struct HashItem{
     struct HashItem* next;
 }HashItem;
 
-
 typedef struct HashTable{
     int size;   
     HashItem** items;
 }HashTable;
-
-errCodes is_same_file(const char *a, const char *b){
-    errCodes res = SUCCESS;
-    char input_path[PATH_MAX];
-    char output_path[PATH_MAX];
-    realpath(a, input_path);
-    realpath(b, output_path);
-    int is_not_same = 0;
-    
-    for (int i = 0; (input_path[i] && output_path[i]); i++) {       
-        if (input_path[i] != output_path[i]) is_not_same = 1;
-    }   
-    if (!is_not_same) res = SAME_FILE_ERR;
-
-    return res;
-}
 
 errCodes getArgs(int argc, char** argv, char** filename){
     if (argc < 2) return NOT_ENOUGH_ARGUEMENTS;
@@ -95,7 +78,6 @@ void push_item(HashItem** head, HashItem* item){
 
     current->next = item;
 }
-
 
 HashItem* pop_item(HashItem** head){
     if(*head == NULL){
@@ -218,9 +200,6 @@ HashTable* refactor_table(HashTable* oldtable, int new_hashsize){
     for (int i = 0; i < oldtable->size; i++){
         while(oldtable->items[i]){
             HashItem* item = pop_item(&(oldtable->items[i]));
-            // char* key = item->key;
-            // char* value = item->value;
-            // size_t hash_value = item->hash_value;
             
             if (insert_table(table, item->key, item->value, item->hash_value) != SUCCESS){
                 delete_table(table);
@@ -257,39 +236,6 @@ void next_lexem(int* c, FILE* f){
         if(!(*c == ' ' || *c == '\t' || *c == '\n')) break;
     }
     fseek(f, -1, SEEK_CUR);
-}
-
-errCodes read_str(FILE* input, char** buffer, int* c){
-    int capacity = 20;
-    int idx = 0;
-    char* str = (char*)malloc(capacity * sizeof(char));
-    if (!str){ 
-        return MALLOC_ERR;
-    }
-    while((*c = fgetc(input)) != EOF){
-        if (isspace(*c) || (!isalnum(*c) && *c != '_')) {
-            break;
-        }
-        str[idx++] = *c;
-        if(capacity == idx){
-            capacity *= 2;
-            char* temp = (char*)realloc(str, capacity * sizeof(char));
-            if(temp == NULL){
-                free(str);
-                return REALLOC_ERR;
-            }
-            str = temp;
-        }
-    }
-    if (idx == 0 && *c == EOF) { 
-        free(str);
-        return MALLOC_ERR;
-    }
-    if (*c != EOF) fseek(input, -1, SEEK_CUR);
-    
-    str[idx] = '\0';
-    *buffer = str;
-    return SUCCESS;
 }
 
 errCodes read_key(FILE* input, char** buffer, int* c){
@@ -377,7 +323,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
             break;
         }
         char* str;
-        if (read_value(file, &str, c) != SUCCESS) { // smth went wrong
+        if (read_value(file, &str, c) != SUCCESS) { // if smth went wrong
             return MALLOC_ERR;
         }
         next_lexem(c, file);
@@ -406,7 +352,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
             }
 
             // adding key value to hashtable
-            printf("%s %s\n", key, value);
+            // printf("%s %s\n", key, value);
             if (insert_table(*table, key, value, hash_function(key)) != SUCCESS) {
                 free(key);
                 free(value);
@@ -524,6 +470,7 @@ int main(int argc, char** argv){
         return 1;
     }
 
+    printf("Hash table:\n");
     print_table(table);
     int is_need = is_need_rebuild(table);
     int hashsize = HASHSIZE;
@@ -544,9 +491,10 @@ int main(int argc, char** argv){
         } else{
             break;
         }
+        printf("\nrefactored!\n");
+        print_table(table);
     }
-    printf("\nrefactored!\n");
-    print_table(table);
+    
 
     errCodes process_status = process_text(file, table, &c, output);
     if (process_status != SUCCESS) {
