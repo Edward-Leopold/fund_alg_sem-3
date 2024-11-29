@@ -6,6 +6,11 @@
 #define A zzz
 #define zzz 78
 
+        zzz
+
+                            zzz
+
+
 int main()
 {
     char message[MAXLENzzzG22TH] = GREETING;

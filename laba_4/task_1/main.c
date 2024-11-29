@@ -373,7 +373,7 @@ errCodes read_define(FILE * file, int *c, HashTable** table){
 
         *c = fgetc(file);
         if (*c != '#'){
-            fseek(file, -1, SEEK_CUR);
+            fseek(file, start_pos, SEEK_SET);
             break;
         }
         char* str;
