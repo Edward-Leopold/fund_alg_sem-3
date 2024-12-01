@@ -17,6 +17,12 @@ int len(const char* str) {
     return i;
 }
 
+int charToInt(char c){
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
+    return -1;
+}
+
 char* gorner(int n, int base){
     int length = (int)(log(n)/log(base)) + 1;
     char* result = (char*)malloc(sizeof(char) * (length + 1));
@@ -56,7 +62,7 @@ int conversion_to_10(const char *number, int base, long long* result) {
             d = number[i] - '0';
         } 
          else if ('A' <= number[i] && number[i] <= 'Z') {
-            d = number[i] - 'a' + 10; 
+            d = number[i] - 'A' + 10; 
         } else {
             return 1;
         }
