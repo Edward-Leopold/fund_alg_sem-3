@@ -80,7 +80,7 @@ char* back_gorner(long long num, int base){
 
 err_codes conversion_to_10(const char *number, int base, long long* result) {
     *result = 0;
-    int sign = (number[0] == '-') ? 1 : 0;
+    int sign = (number[0] == '-' && number[1]) ? 1 : 0;
     int digit;
     for (int i = sign; number[i]; ++i){
         digit = charToInt(number[i]);
@@ -97,6 +97,7 @@ err_codes conversion_to_10(const char *number, int base, long long* result) {
 
 char* removeLeadingZeros(char* str) {
     char* p = str;
+    if (str[0] == '-' && str[1] == '0') ++p;
     while (*p == '0') {
         ++p;
     }
@@ -105,7 +106,11 @@ char* removeLeadingZeros(char* str) {
         str[0] = '0';
         str[1] = '\0';
     } else {
-        memmove(str, p, strlen(p) + 1);
+        if(str[0] == '-'){
+            memmove(str + 1, p, strlen(p) + 1);
+        } else{
+            memmove(str, p, strlen(p) + 1);
+        }
     }
 
     return str;
