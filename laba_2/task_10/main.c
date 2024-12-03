@@ -16,17 +16,6 @@ double fak(int n) {
     return res;
 }
 
-double coef_C(int n, int k) {
-    if (k > n) return 0;
-    return fak(n) / (fak(k) * fak(n - k));
-}
-
-void calc_binomial_coeffs(int n, double* coeffs) {
-    for (int k = 0; k <= n; ++k) {
-        coeffs[k] = coef_C(n, k);
-    }
-}
-
 double fast_pow(double base, int exp) {
     double result = 1.0;
     while (exp > 0) {
