@@ -5,9 +5,10 @@
 #include <string.h>
 
 typedef enum errCodes {
-    MALLOC_ERR,
 
-    SUCCESS
+    SUCCESS,
+    MALLOC_ERR,
+    DOUBLE_OVERFLOW,
 } errCodes;
 
 double fak(int n) {
@@ -27,65 +28,83 @@ double fast_pow(double base, int exp) {
 }
 
 errCodes recomposition(double epsilon, double a, double** result_coeffs, int degree, ...) {
-    *result_coeffs = malloc(sizeof(double) * (degree + 1));
+    *result_coeffs = (double*)malloc(sizeof(double) * (degree + 1));
     if (*result_coeffs == NULL) {
         return MALLOC_ERR;
     }
 
-    double* initial_poly = malloc(sizeof(double) * (degree + 1));
-    if (!initial_poly) {
+    double* init_coeffs = (double*)malloc(sizeof(double) * (degree + 1));
+    if (init_coeffs == NULL) {
         free(*result_coeffs);
         return MALLOC_ERR;
     }
 
-    va_list args;
-    va_start(args, degree);
-    for (int i = degree; i >= 0; --i) {
-        initial_poly[i] = va_arg(args, double);
+    va_list init_coefs;
+    va_start(init_coefs, degree);
+    for (int i = 0; i <= degree; ++i){
+        init_coeffs[i] = va_arg(init_coefs, double);
     }
-    va_end(args);
+    va_end(init_coefs);
 
-    double* binom_coeffs = malloc(sizeof(double) * (degree + 1));
-    if (!binom_coeffs) {
-        free(initial_poly);
-        free(*result_coeffs);
-        return MALLOC_ERR; 
-    }
-    calc_binomial_coeffs(degree, binom_coeffs);
+    for (int k = 0; k <= degree; ++k) {
+        double new_coef_numerator = 0.0;
 
-    for (int i = 0; i <= degree; ++i) {
-        (*result_coeffs)[i] = binom_coeffs[i] * fast_pow(a, i) * initial_poly[0];
-    }
+        for (int i = k; i <= degree; ++i) {
+            double term = init_coeffs[i];
+            for (int j = 0; j < k; ++j) {
+                term *= (i - j); 
+            }
+            new_coef_numerator += term * pow(a, i - k);
+        }
 
-    for (int current_deg = 1; current_deg <= degree; ++current_deg) {
-        double next_coeff = initial_poly[current_deg] - (*result_coeffs)[current_deg];
-        
-        for (int i = current_deg; i <= degree; ++i) {
-            (*result_coeffs)[i] += next_coeff * binom_coeffs[i - current_deg] * fast_pow(a, i - current_deg);
+        (*result_coeffs)[k] = new_coef_numerator / fak(k);
+        if (!isfinite((*result_coeffs)[k])){
+            free(result_coeffs);
+            free(init_coeffs);
+            return DOUBLE_OVERFLOW;
+        }
+
+        if (fabs((*result_coeffs)[k]) < epsilon) {
+            (*result_coeffs)[k] = 0.0;
         }
     }
 
-    free(initial_poly);
-    free(binom_coeffs);
-
+    free(init_coeffs);
     return SUCCESS;
 }
 
 int main() {
-    int degree = 5;
-    double a = 36;
+    int degree = 1;
+    double epsilon = 1e-6;
+    double a = -1.0;
     double* result_coeffs = NULL;
-    double epsilon = 1e-9;
 
-    errCodes status = recomposition(epsilon, a, &result_coeffs, degree, 2.0, 1.0, 1.0);
+    errCodes status = recomposition(epsilon, a, &result_coeffs, degree, 6.0, 5.0, 2, 4);
     
     if (status != SUCCESS) {
-        printf("Ошибка выделения памяти\n");
+        switch (status){
+        case MALLOC_ERR:
+            printf("Memory allocation error!\n");
+            break;
+        case DOUBLE_OVERFLOW:
+            printf("Type double overflow occured while calculating coefficients!\n");
+            break;
+        default:
+            break;
+        }
         return 1;
     }
-    printf("Пересложение:\n");
-    for (int i = degree; i >= 0; --i) {
-        printf("+ %.5f * (x + %.2f)^%d ", result_coeffs[i], a, degree - i);
+
+    printf("Переразложение:\n");
+    // for (int i = degree; i >= 0; --i) {
+    //     if (i == 0) printf("%.5f * (x + %.2f)^%d ", result_coeffs[i], a, degree - i); 
+    //     printf("+ %.5f * (x + %.2f)^%d ", result_coeffs[i], a, degree - i);
+    // }
+    // printf("\n");
+    for (int i = 0; i <= degree; i++) {
+        printf("%f(x - %f)^%d ", result_coeffs[i], a, i);
+        if (i != degree)
+            printf("+ ");
     }
     printf("\n");
 
