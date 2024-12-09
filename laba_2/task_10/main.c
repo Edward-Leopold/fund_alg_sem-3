@@ -74,12 +74,12 @@ errCodes recomposition(double epsilon, double a, double** result_coeffs, int deg
 }
 
 int main() {
-    int degree = 1;
+    int degree = 5;
     double epsilon = 1e-6;
-    double a = -1.0;
+    double a = 1.0;
     double* result_coeffs = NULL;
 
-    errCodes status = recomposition(epsilon, a, &result_coeffs, degree, 6.0, 5.0, 2, 4);
+    errCodes status = recomposition(epsilon, a, &result_coeffs, degree, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
     
     if (status != SUCCESS) {
         switch (status){
@@ -96,11 +96,6 @@ int main() {
     }
 
     printf("Переразложение:\n");
-    // for (int i = degree; i >= 0; --i) {
-    //     if (i == 0) printf("%.5f * (x + %.2f)^%d ", result_coeffs[i], a, degree - i); 
-    //     printf("+ %.5f * (x + %.2f)^%d ", result_coeffs[i], a, degree - i);
-    // }
-    // printf("\n");
     for (int i = 0; i <= degree; i++) {
         printf("%f(x - %f)^%d ", result_coeffs[i], a, i);
         if (i != degree)
