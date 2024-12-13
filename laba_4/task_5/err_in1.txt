@@ -1,0 +1,3 @@
+№1: invalid bracket
+№2: invalid operand
+№3: invalid operand
