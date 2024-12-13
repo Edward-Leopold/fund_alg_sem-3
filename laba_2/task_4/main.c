@@ -31,7 +31,7 @@ int get_direction(double a_x, double a_y, double b_x, double b_y, double c_x, do
 }
 
 int is_convex(int points_cnt, ...) {
-	if (points_cnt < 6) return 0;
+	if (points_cnt < 3) return 0;
 
 	va_list points;
 	va_start(points, points_cnt);
@@ -47,9 +47,14 @@ int is_convex(int points_cnt, ...) {
     double second_x = x2;
     double second_y = y2;
 
-	int cur_direction = get_direction(x1, y1, x2, y2, x3, y3);
+	int init_direction = get_direction(x1, y1, x2, y2, x3, y3);
 
-	for (int i = 3; i < points_cnt; i++) {
+	if (init_direction == 0){
+		va_end(points);
+		return 0;
+	}
+
+	for (int i = 3; i < points_cnt; ++i) {
 		x1 = x2;
 		y1 = y2;
 		x2 = x3;
@@ -59,8 +64,11 @@ int is_convex(int points_cnt, ...) {
 
 		int dir = get_direction(x1, y1, x2, y2, x3, y3);
 
-		if (dir == 0) continue;
-		if (dir != cur_direction) {
+		if (dir == 0) {
+			va_end(points);
+			return 0;
+		}
+		if (dir != init_direction) {
 			va_end(points);
 			return 0;
 		}
@@ -69,19 +77,27 @@ int is_convex(int points_cnt, ...) {
 
     int last1 = get_direction(x2, y2, x3, y3, first_x, first_y);
     int last2 = get_direction(x3, y3, first_x, first_y, second_x, second_y);
-    int result = (last1 == cur_direction && last2 == cur_direction); 
+    int result = (last1 == init_direction && last2 == init_direction); 
 
 	return result;
 }
 
 int main(int argc, char** argv){
 
-	int res2_1 = is_convex(6, -3, 2, -2, -1, 3, 2);
-	if (res2_1) printf("Выпуклый\n");
+	int convex1 = is_convex(3, -3.0, 2.0, -2.0, -1.0, 3.0, 2.0);
+	if (convex1) printf("Выпуклый\n");
 	else printf("Не выпуклый\n");
 
-    int res2_2 = is_convex(10, 6, 4, 10, 4, 15, 10, 6, 8, 10, 6); // неправильно считает
-	if (res2_2) printf("Выпуклый\n");
+    int convex2 = is_convex(5, 6.0, 4.0, 10.0, 4.0, 15.0, 10.0, 6.0, 8.0, 10.0, 6.0); 
+	if (convex2) printf("Выпуклый\n");
+	else printf("Не выпуклый\n");
+
+	int convex3 = is_convex(3, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0); 
+	if (convex3) printf("Выпуклый\n");
+	else printf("Не выпуклый\n");
+
+	int convex4 = is_convex(3, 2.0, 3.0, 3.0, 4.0, 2.0, 3.0); 
+	if (convex4) printf("Выпуклый\n");
 	else printf("Не выпуклый\n");
 
     return 0;
