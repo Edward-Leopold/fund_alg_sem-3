@@ -16,6 +16,16 @@ typedef enum errCodes{
     SUCCESS
 }errCodes;
 
+double fast_pow(double base, int exp) {
+    double result = 1.0;
+    while (exp > 0) {
+        if (exp % 2 == 1) result *= base;
+        base *= base;
+        exp /= 2;
+    }
+    return result;
+}
+
 int get_direction(double a_x, double a_y, double b_x, double b_y, double c_x, double c_y) {
 	double ab_x = b_x - a_x;
 	double ab_y = b_y - a_y;
@@ -82,6 +92,20 @@ int is_convex(int points_cnt, ...) {
 	return result;
 }
 
+double polynomial(double point, int degree, ...){
+    double sum = 0.0;
+
+    va_list coeffs;
+    va_start(coeffs, degree);
+    for (int n = degree; n >= 0; --n){
+        double coef = va_arg(coeffs, double);
+        double res = fast_pow(point, n) * coef;
+        sum += res;
+    }
+    va_end(coeffs);
+    return sum;
+}
+
 int main(int argc, char** argv){
 
 	int convex1 = is_convex(3, -3.0, 2.0, -2.0, -1.0, 3.0, 2.0);
@@ -99,6 +123,13 @@ int main(int argc, char** argv){
 	int convex4 = is_convex(3, 2.0, 3.0, 3.0, 4.0, 2.0, 3.0); 
 	if (convex4) printf("Выпуклый\n");
 	else printf("Не выпуклый\n");
+
+	// 12*x^3 - 85*x^2 + 34.8*x - 7.005
+	double polynominal_res = polynomial(2, 3, 12.0, -85.0, 34.8, -7.005);
+	printf("result of polynominal: %lf\n", polynominal_res);
+
+	double polynominal_res2 = polynomial(200, 3, 0.0, 0.0, 0.0, 0.0);
+	printf("result of polynominal: %lf\n", polynominal_res2);
 
     return 0;
 }
