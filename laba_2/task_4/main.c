@@ -247,7 +247,7 @@ errCodes isKaprekar(long long num, int base, int* result){
 }
 
 errCodes find_kaprekar(char*** result, int base, int nums_count, ...){
-	if (base < 0 || base > 36){
+	if (base < 2 || base > 36){
 		return BASE_ERR;
 	}
 
@@ -289,6 +289,7 @@ errCodes find_kaprekar(char*** result, int base, int nums_count, ...){
 				if (!temp){
 					free(kaps_nums);
 					va_end(nums);
+					return REALLOC_ERR;
 				}
 				kaps_nums = temp;
 			}
@@ -336,21 +337,32 @@ int main(int argc, char** argv){
 	double polynominal_res2 = polynomial(200, 3, 0.0, 0.0, 0.0, 0.0);
 	printf("result of polynominal: %lf\n", polynominal_res2);
 
-	// char* str = "123456789";
-	// for (int i = 1; i < strlen(str); ++i){
-	// 	char* left; 
-	// 	char* right;
-	// 	split_string(str, i, &left, &right);
-	// 	printf("%s %s\n", left, right);
-	// 	free(left);
-	// 	free(right);
-	// }
-
-
-
 	char** kaps = NULL;
-	int base = 10;
-	errCodes kapStatus = find_kaprekar(&kaps, base, 6, "1", "9", "45", "55", "98", "297");
+	int base = 16;
+	errCodes kapStatus = find_kaprekar(&kaps, base, 6, "b", "D5D5", "45", "66", "BB", "777");
+	if(kapStatus != SUCCESS){
+		switch (kapStatus){
+		case MALLOC_ERR:
+			printf("Memory allocation error!\n");
+			break;
+		case REALLOC_ERR:
+			printf("Memory reallocation error!\n");
+			break;
+		case BASE_ERR:
+			printf("Base must be in range of 2 to 36!\n");
+			break;
+		case NUM_IN_BASE_ERR:
+			printf("No such number in passed base!\n");
+			break;
+		case NO_NUMBERS_KAPREKAR:
+			printf("No numbers to search kaprekar!\n");
+			break;
+			
+		default:
+			break;
+		}
+		return 1;
+	}
 	if (kaps[0]){
 		printf("Найденные числа Капрекара по основанию %d: \n", base);
 	} else{
