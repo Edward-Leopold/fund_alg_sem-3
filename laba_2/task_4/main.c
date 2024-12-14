@@ -216,9 +216,10 @@ errCodes isKaprekar(long long num, int base, int* result){
 	}
 
 	int len = strlen(square_str);
-	char* left_substr = NULL;
-	char* right_substr = NULL;
+	
 	for (int i = 1; i < len; i++) {
+		char* left_substr = NULL;
+		char* right_substr = NULL;
 		errCodes split_status = split_string(square_str, i, &left_substr, &right_substr);
 		if (split_status != SUCCESS){
 			free(square_str);
@@ -238,9 +239,10 @@ errCodes isKaprekar(long long num, int base, int* result){
 		if (right > 0 && left + right == num) {
 			*result = 1;
 		}
+		free(left_substr);
+		free(right_substr);
 	}
-	free(left_substr);
-	free(right_substr);
+	
 	free(square_str);
 
 	return SUCCESS;
